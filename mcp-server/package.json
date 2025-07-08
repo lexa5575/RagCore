@@ -1,0 +1,22 @@
+{
+  "name": "rag-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for RAG Assistant integration with Cline",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "axios": "^1.6.2"
+  },
+  "keywords": [
+    "mcp",
+    "rag",
+    "assistant",
+    "cline"
+  ],
+  "author": "",
+  "license": "MIT"
+}

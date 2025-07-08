@@ -1,0 +1,186 @@
+auto_scan:
+  auto_add_new: false
+  auto_update_existing: true
+  doc_indicators:
+  - README.md
+  - readme.md
+  - docs
+  - documentation
+  - guide
+  - .vitepress
+  - docusaurus.config.js
+  - mkdocs.yml
+  enabled: true
+  exclude_patterns:
+  - node_modules
+  - .git
+  - .venv
+  - venv
+  - __pycache__
+  - .next
+  - .nuxt
+  - dist
+  - build
+  - .cache
+  - coverage
+  min_md_files: 1
+  scan_paths:
+  - .
+cache:
+  enabled: true
+  max_size: 1000
+  ttl: 3600
+database:
+  collection_name: universal_docs
+  path: ./chroma_storage
+embeddings:
+  model: all-MiniLM-L6-v2
+frameworks:
+  alpine:
+    chunk_settings:
+      min_size: 200
+      max_size: 2000
+      overlap: 200
+    content_cleaning:
+      remove_code_blocks: false
+      remove_frontmatter: true
+      remove_html_tags: true
+    description: Alpine.js - Your new, lightweight, JavaScript framework
+    enabled: true
+    exclude_patterns:
+    - '**/node_modules/**'
+    - '**/.git/**'
+    file_patterns:
+    - '*.md'
+    name: Alpine.js
+    path: /Users/aleksejcuprynin/PycharmProjects/chanki/alpine_docs
+    prefix: alpine
+    type: markdown
+  filament:
+    chunk_settings:
+      min_size: 200
+      max_size: 2000
+      overlap: 200
+    content_cleaning:
+      remove_code_blocks: false
+      remove_frontmatter: true
+      remove_html_tags: true
+    description: Filament - Accelerated Laravel development framework
+    enabled: true
+    exclude_patterns:
+    - '**/node_modules/**'
+    - '**/.git/**'
+    file_patterns:
+    - '*.md'
+    name: Filament
+    path: /Users/aleksejcuprynin/PycharmProjects/chanki/filament_docs
+    prefix: filament
+    type: markdown
+  inertia:
+    chunk_settings:
+      min_size: 200
+      max_size: 2000
+      overlap: 200
+    content_cleaning:
+      remove_code_blocks: false
+      remove_frontmatter: true
+      remove_html_tags: true
+    description: Inertia.js - Build single-page apps without building an API
+    enabled: true
+    exclude_patterns:
+    - '**/node_modules/**'
+    - '**/.git/**'
+    file_patterns:
+    - '*.md'
+    name: Inertia
+    path: /Users/aleksejcuprynin/PycharmProjects/chanki/inertia_docs
+    prefix: inertia
+    type: markdown
+  laravel:
+    chunk_settings:
+      min_size: 200
+      max_size: 2000
+      overlap: 200
+    content_cleaning:
+      remove_code_blocks: false
+      remove_frontmatter: true
+      remove_html_tags: true
+    description: Laravel - PHP Framework for Web Artisans
+    enabled: true
+    exclude_patterns:
+    - '**/node_modules/**'
+    - '**/.git/**'
+    file_patterns:
+    - '*.md'
+    name: Laravel
+    path: /Users/aleksejcuprynin/PycharmProjects/chanki/laravel_docs
+    prefix: laravel
+    type: markdown
+  tailwindcss:
+    chunk_settings:
+      min_size: 200
+      max_size: 2000
+      overlap: 200
+    content_cleaning:
+      remove_code_blocks: false
+      remove_frontmatter: true
+      remove_html_tags: true
+    description: Tailwind CSS - A utility-first CSS framework
+    enabled: true
+    exclude_patterns:
+    - '**/node_modules/**'
+    - '**/.git/**'
+    file_patterns:
+    - '*.md'
+    name: Tailwind CSS
+    path: /Users/aleksejcuprynin/PycharmProjects/chanki/tailwindcss_docs
+    prefix: tailwindcss
+    type: markdown
+  vue:
+    chunk_settings:
+      min_size: 200
+      max_size: 2000
+      overlap: 200
+    content_cleaning:
+      remove_code_blocks: false
+      remove_frontmatter: true
+      remove_html_tags: true
+      remove_script_tags: true
+      remove_style_tags: true
+      remove_vue_components: true
+    description: Vue.js - Progressive JavaScript Framework
+    enabled: true
+    exclude_patterns:
+    - '**/node_modules/**'
+    - '**/.git/**'
+    file_patterns:
+    - '*.md'
+    name: Vue
+    path: /Users/aleksejcuprynin/PycharmProjects/chanki/vue_docs/src
+    prefix: vue
+    type: vitepress
+ide:
+  context_window: 3
+  enabled: true
+  quick_response_timeout: 1.0
+llm:
+  models:
+    qwen:
+      api_url: http://127.0.0.1:1234/v1/completions
+      max_tokens: 800
+      model_name: qwen2.5-coder-3b-instruct-mlx
+      temperature: 0.3
+    deepseek:
+      api_url: http://localhost:11434/api/generate
+      max_tokens: 800
+      model_name: deepseek-r1:8b
+      temperature: 0.3
+  default_model: qwen  # Модель по умолчанию
+logging:
+  file: ./logs/rag_system.log
+  level: INFO
+server:
+  cors_origins:
+  - '*'
+  host: 0.0.0.0
+  port: 8000
