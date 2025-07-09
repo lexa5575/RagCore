@@ -7,10 +7,10 @@
 import yaml
 import time
 import logging
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import chromadb
@@ -824,17 +824,28 @@ async def get_project_sessions(project_name: str):
         raise HTTPException(status_code=500, detail="Ошибка получения сессий проекта")
 
 @app.post("/sessions/{session_id}/key-moment")
-async def add_key_moment(session_id: str, moment_type: str, title: str, 
-                        summary: str, importance: int = None, 
-                        files: List[str] = None, context: str = ""):
+async def add_key_moment(session_id: str, request: Request):
     """Добавление ключевого момента в сессию"""
     if not session_manager:
         raise HTTPException(status_code=503, detail="Session Manager не инициализирован")
     
     try:
+        data = await request.json()
+        moment_type = data.get("moment_type")
+        title = data.get("title")
+        summary = data.get("summary")
+        importance = data.get("importance")
+        files = data.get("files", [])
+        context = data.get("context", "")
+        
+        if not moment_type or not title or not summary:
+            raise HTTPException(status_code=400, detail="Обязательные поля: moment_type, title, summary")
+        
         moment_type_enum = KeyMomentType(moment_type)
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Неизвестный тип момента: {moment_type}")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Ошибка обработки данных: {e}")
     
     try:
         success = session_manager.add_key_moment(

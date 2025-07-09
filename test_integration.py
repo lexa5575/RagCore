@@ -137,7 +137,7 @@ class RAGServerTest:
         
         response = self.session.post(
             f"{self.base_url}/sessions/{session_id}/key-moment",
-            params=payload
+            json=payload
         )
         
         if response.status_code == 200:
