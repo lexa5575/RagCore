@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 import chromadb
 from sentence_transformers import SentenceTransformer
 import requests
+from session_manager import SessionManager, KeyMomentType, auto_detect_key_moments, MOMENT_IMPORTANCE
 
 # Загрузка конфигурации
 def load_config(config_path: str = "config.yaml") -> Dict[str, Any]:
@@ -65,6 +66,7 @@ def init_embedder():
 # Глобальные объекты
 collection = init_database()
 embedder = init_embedder()
+session_manager = SessionManager()
 
 # FastAPI приложение
 app = FastAPI(
@@ -92,6 +94,10 @@ class QueryRequest(BaseModel):
     max_results: int = Field(5, ge=1, le=20, description="Максимум результатов")
     context: Optional[str] = Field(None, description="Дополнительный контекст")
     model: Optional[str] = Field(None, description="Модель LLM (qwen или deepseek)")
+    # Новые поля для интеграции с системой памяти
+    project_name: Optional[str] = Field(None, description="Имя проекта для сессии")
+    session_id: Optional[str] = Field(None, description="ID существующей сессии")
+    use_memory: bool = Field(True, description="Использовать контекст сессии")
 
 class IDEQueryRequest(BaseModel):
     question: str = Field(..., description="Вопрос от IDE")
@@ -100,6 +106,10 @@ class IDEQueryRequest(BaseModel):
     cursor_position: Optional[Dict[str, int]] = Field(None, description="Позиция курсора")
     framework: Optional[str] = Field(None, description="Автоопределяемый фреймворк")
     quick_mode: bool = Field(True, description="Быстрый режим для автодополнения")
+    # Новые поля для интеграции с системой памяти
+    project_name: Optional[str] = Field(None, description="Имя проекта для сессии")
+    session_id: Optional[str] = Field(None, description="ID существующей сессии")
+    use_memory: bool = Field(True, description="Использовать контекст сессии")
 
 class QueryResponse(BaseModel):
     answer: str
@@ -107,6 +117,10 @@ class QueryResponse(BaseModel):
     total_docs: int
     response_time: float
     framework_detected: Optional[str] = None
+    # Новые поля для интеграции с системой памяти
+    session_id: Optional[str] = None
+    session_context_used: bool = False
+    key_moments_detected: List[Dict[str, Any]] = []
 
 # Кэш для быстрых ответов
 cache = {}
@@ -134,6 +148,69 @@ def detect_framework_from_context(file_path: str = None, file_content: str = Non
 def get_cache_key(question: str, framework: str = None) -> str:
     """Генерация ключа кэша"""
     return f"{question}:{framework or 'all'}"
+
+def get_or_create_session(project_name: str, session_id: str = None) -> str:
+    """Получение существующей сессии или создание новой"""
+    if session_id:
+        # Проверяем, что сессия существует
+        session = session_manager.get_session(session_id)
+        if session:
+            return session_id
+    
+    if project_name:
+        # Пытаемся найти последнюю сессию проекта
+        existing_session = session_manager.get_latest_session(project_name)
+        if existing_session:
+            return existing_session
+        
+        # Создаем новую сессию
+        return session_manager.create_session(project_name)
+    
+    # Создаем анонимную сессию
+    return session_manager.create_session("anonymous")
+
+def build_context_with_memory(question: str, framework: str = None, 
+                             session_id: str = None, base_context: str = None) -> Tuple[str, bool]:
+    """Создание контекста с учетом памяти сессии"""
+    if not session_id:
+        return base_context or "", False
+    
+    # Получаем контекст сессии
+    session_context = session_manager.get_session_context(session_id)
+    if not session_context:
+        return base_context or "", False
+    
+    # Строим расширенный контекст
+    context_parts = []
+    
+    # Добавляем информацию о проекте
+    context_parts.append(f"[Project Context: {session_context['project_name']}]")
+    
+    # Добавляем ключевые моменты
+    if session_context['key_moments']:
+        context_parts.append("[Key Moments from Session]")
+        for moment in session_context['key_moments'][:5]:  # Топ 5 ключевых моментов
+            context_parts.append(f"- {moment['title']}: {moment['summary']}")
+    
+    # Добавляем сжатую историю
+    if session_context['compressed_history']:
+        context_parts.append("[Previous Work Summary]")
+        for period in session_context['compressed_history'][-2:]:  # Последние 2 периода
+            context_parts.append(f"- {period['period']}: {period['summary']}")
+    
+    # Добавляем последние сообщения
+    if session_context['recent_messages']:
+        context_parts.append("[Recent Context]")
+        recent_messages = session_context['recent_messages'][-5:]  # Последние 5 сообщений
+        for msg in recent_messages:
+            role = "User" if msg['role'] == 'user' else "Assistant"
+            context_parts.append(f"{role}: {msg['content'][:150]}...")
+    
+    # Добавляем базовый контекст
+    if base_context:
+        context_parts.append(f"[Additional Context]\n{base_context}")
+    
+    return "\n\n".join(context_parts), True
 
 def get_cached_response(cache_key: str) -> Optional[Dict]:
     """Получение ответа из кэша"""
@@ -247,15 +324,30 @@ async def root():
                  if config.get('enabled', True)}
     
     return {
-        "message": "🚀 RAG Assistant API v2.0",
-        "description": "Универсальный RAG ассистент с поддержкой IDE",
+        "message": "🚀 RAG Assistant API v2.0 with Smart Memory",
+        "description": "Универсальный RAG ассистент с поддержкой IDE и системой памяти",
         "frameworks": frameworks,
         "total_docs": collection.count(),
+        "features": [
+            "🧠 Smart Session Memory with sliding window",
+            "🔑 Key Moments detection and tracking",
+            "📊 Compressed history for long sessions",
+            "🔄 Automatic framework detection",
+            "⚡ Caching and performance optimization"
+        ],
         "endpoints": {
-            "/ask": "POST - Обычный запрос",
-            "/ide/ask": "POST - Запрос от IDE",
-            "/stats": "GET - Статистика",
-            "/frameworks": "GET - Список фреймворков"
+            "/ask": "POST - Обычный запрос с поддержкой памяти",
+            "/ide/ask": "POST - Запрос от IDE с контекстом сессии",
+            "/stats": "GET - Статистика документов",
+            "/frameworks": "GET - Список фреймворков",
+            "/sessions/create": "POST - Создать новую сессию",
+            "/sessions/{session_id}": "GET - Информация о сессии",
+            "/sessions/project/{project_name}": "GET - Сессии проекта",
+            "/sessions/{session_id}/key-moment": "POST - Добавить ключевой момент",
+            "/sessions/{session_id}/archive": "POST - Архивировать сессию",
+            "/sessions/cleanup": "POST - Очистить старые сессии",
+            "/sessions/stats": "GET - Статистика сессий",
+            "/sessions/key-moment-types": "GET - Типы ключевых моментов"
         }
     }
 
@@ -316,11 +408,22 @@ async def ask_question(data: QueryRequest):
     """Основной endpoint для вопросов"""
     start_time = time.time()
     
-    # Проверяем кэш
+    # Управление сессией
+    current_session_id = None
+    session_context_used = False
+    
+    if data.use_memory and (data.project_name or data.session_id):
+        current_session_id = get_or_create_session(data.project_name, data.session_id)
+    
+    # Проверяем кэш (учитываем сессию в ключе)
     cache_key = get_cache_key(data.question, data.framework)
+    if current_session_id:
+        cache_key += f":{current_session_id}"
+    
     cached_response = get_cached_response(cache_key)
     if cached_response:
         cached_response['response_time'] = time.time() - start_time
+        cached_response['session_id'] = current_session_id
         return QueryResponse(**cached_response)
     
     # Создаем эмбеддинг для поиска
@@ -348,38 +451,89 @@ async def ask_question(data: QueryRequest):
     frameworks = [meta.get("framework", "unknown") for meta in metadatas]
     main_framework = max(set(frameworks), key=frameworks.count) if frameworks else "unknown"
     
-    # Создаем контекст
-    context_parts = []
+    # Создаем контекст документации
+    doc_context_parts = []
     for doc, meta in zip(documents, metadatas):
         framework = meta.get("framework", "unknown").upper()
         source = meta.get("source", "unknown")
         heading = meta.get("heading", "")
-        context_parts.append(f"[{framework}] {source} - {heading}\n{doc}")
+        doc_context_parts.append(f"[{framework}] {source} - {heading}\n{doc}")
     
-    context = "\n\n".join(context_parts)
+    doc_context = "\n\n".join(doc_context_parts)
+    
+    # Создаем контекст с учетом памяти сессии
+    memory_context = ""
+    if current_session_id:
+        memory_context, session_context_used = build_context_with_memory(
+            data.question, data.framework, current_session_id, data.context
+        )
     
     # Адаптивный промпт
     framework_title = main_framework.title() if main_framework != "unknown" else "Web Development"
     
-    prompt = f"""[{framework_title} Documentation Context]
-{context}
-
-[User Question]
-{data.question}
-
-[Additional Context]
-{data.context or "Нет дополнительного контекста"}
-
-[Instructions]
-- Answer based on the provided documentation context
-- If the question relates to {framework_title}, prioritize {framework_title}-specific information
-- Provide practical, actionable advice with code examples when relevant
-- Be concise but comprehensive
-
-[Answer]"""
+    prompt_parts = [f"[{framework_title} Documentation Context]", doc_context]
+    
+    if memory_context:
+        prompt_parts.extend(["[Session Memory Context]", memory_context])
+    
+    prompt_parts.extend([
+        "[User Question]",
+        data.question,
+        "[Additional Context]",
+        data.context or "Нет дополнительного контекста",
+        "[Instructions]",
+        "- Answer based on the provided documentation context",
+        f"- If the question relates to {framework_title}, prioritize {framework_title}-specific information",
+        "- Use session memory context to provide continuity and avoid repeating information",
+        "- Provide practical, actionable advice with code examples when relevant",
+        "- Be concise but comprehensive",
+        "",
+        "[Answer]"
+    ])
+    
+    prompt = "\n\n".join(prompt_parts)
     
     # Получаем ответ от LLM
     answer = await query_llm(prompt, data.model)
+    
+    # Автоматическое обнаружение ключевых моментов
+    key_moments_detected = []
+    if current_session_id:
+        # Добавляем сообщение пользователя в сессию
+        session_manager.add_message(
+            current_session_id, 
+            "user", 
+            data.question,
+            actions=["ask_question"],
+            files=[],
+            metadata={"framework": data.framework, "model": data.model}
+        )
+        
+        # Добавляем ответ ассистента
+        session_manager.add_message(
+            current_session_id,
+            "assistant",
+            answer,
+            actions=["provide_answer"],
+            files=[],
+            metadata={"framework": main_framework, "sources_count": len(documents)}
+        )
+        
+        # Автоматическое обнаружение ключевых моментов
+        detected_moments = auto_detect_key_moments(answer, ["provide_answer"], [])
+        for moment_type, title, summary in detected_moments:
+            session_manager.add_key_moment(
+                current_session_id,
+                moment_type,
+                title,
+                summary,
+                context=data.question
+            )
+            key_moments_detected.append({
+                "type": moment_type.value,
+                "title": title,
+                "summary": summary
+            })
     
     # Формируем ответ
     response_data = {
@@ -394,7 +548,10 @@ async def ask_question(data: QueryRequest):
         ],
         "total_docs": len(documents),
         "response_time": time.time() - start_time,
-        "framework_detected": main_framework
+        "framework_detected": main_framework,
+        "session_id": current_session_id,
+        "session_context_used": session_context_used,
+        "key_moments_detected": key_moments_detected
     }
     
     # Сохраняем в кэш
@@ -419,12 +576,23 @@ async def ide_ask_question(data: IDEQueryRequest):
     if data.cursor_position:
         ide_context.append(f"Позиция курсора: строка {data.cursor_position.get('line', 0)}")
     
+    # Автоматическое определение имени проекта из пути файла
+    project_name = data.project_name
+    if not project_name and data.file_path:
+        # Извлекаем имя проекта из пути файла
+        path_parts = data.file_path.split('/')
+        if len(path_parts) > 1:
+            project_name = path_parts[-2] if path_parts[-1] else path_parts[-3]
+    
     # Создаем запрос
     query_request = QueryRequest(
         question=data.question,
         framework=detected_framework,
         max_results=3 if data.quick_mode else 5,
-        context="\n".join(ide_context) if ide_context else None
+        context="\n".join(ide_context) if ide_context else None,
+        project_name=project_name,
+        session_id=data.session_id,
+        use_memory=data.use_memory
     )
     
     # Используем основную логику
@@ -442,6 +610,85 @@ async def clear_cache():
     """Очистка кэша"""
     cache.clear()
     return {"message": "Кэш очищен", "timestamp": time.time()}
+
+# Новые endpoints для управления сессиями
+@app.post("/sessions/create")
+async def create_session(project_name: str):
+    """Создание новой сессии"""
+    session_id = session_manager.create_session(project_name)
+    return {"session_id": session_id, "project_name": project_name}
+
+@app.get("/sessions/{session_id}")
+async def get_session_info(session_id: str):
+    """Получение информации о сессии"""
+    session_context = session_manager.get_session_context(session_id)
+    if not session_context:
+        raise HTTPException(status_code=404, detail="Сессия не найдена")
+    return session_context
+
+@app.get("/sessions/project/{project_name}")
+async def get_project_sessions(project_name: str):
+    """Получение всех сессий проекта"""
+    sessions = session_manager.get_project_sessions(project_name)
+    return {"project_name": project_name, "sessions": sessions}
+
+@app.post("/sessions/{session_id}/key-moment")
+async def add_key_moment(session_id: str, moment_type: str, title: str, 
+                        summary: str, importance: int = None, 
+                        files: List[str] = None, context: str = ""):
+    """Добавление ключевого момента в сессию"""
+    try:
+        moment_type_enum = KeyMomentType(moment_type)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Неизвестный тип момента: {moment_type}")
+    
+    success = session_manager.add_key_moment(
+        session_id, moment_type_enum, title, summary, 
+        importance, files or [], context
+    )
+    
+    if not success:
+        raise HTTPException(status_code=404, detail="Сессия не найдена")
+    
+    return {"message": "Ключевой момент добавлен", "session_id": session_id}
+
+@app.post("/sessions/{session_id}/archive")
+async def archive_session(session_id: str):
+    """Архивирование сессии"""
+    success = session_manager.archive_session(session_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Сессия не найдена")
+    return {"message": "Сессия заархивирована", "session_id": session_id}
+
+@app.post("/sessions/cleanup")
+async def cleanup_sessions(days_threshold: int = 30):
+    """Очистка старых сессий"""
+    archived_count, deleted_count = session_manager.cleanup_old_sessions(days_threshold)
+    return {
+        "message": "Очистка завершена",
+        "archived_sessions": archived_count,
+        "deleted_sessions": deleted_count
+    }
+
+@app.get("/sessions/stats")
+async def get_session_stats():
+    """Статистика системы сессий"""
+    stats = session_manager.get_stats()
+    return stats
+
+@app.get("/sessions/key-moment-types")
+async def get_key_moment_types():
+    """Получение доступных типов ключевых моментов"""
+    return {
+        "types": [
+            {
+                "type": moment_type.value,
+                "importance": importance,
+                "description": moment_type.value.replace("_", " ").title()
+            }
+            for moment_type, importance in MOMENT_IMPORTANCE.items()
+        ]
+    }
 
 # Запуск сервера
 if __name__ == "__main__":
