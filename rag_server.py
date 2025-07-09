@@ -7,15 +7,18 @@
 import yaml
 import time
 import logging
+import re
 from typing import Optional, List, Dict, Any, Tuple
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 import chromadb
 from sentence_transformers import SentenceTransformer
 import requests
+import json
 from session_manager import SessionManager, KeyMomentType, auto_detect_key_moments, MOMENT_IMPORTANCE
 
 # Загрузка конфигурации
@@ -85,6 +88,21 @@ app = FastAPI(
     description="Универсальный RAG ассистент с поддержкой множественных фреймворков",
     version="2.0.0"
 )
+
+# Обработчик ошибок JSON
+@app.exception_handler(json.JSONDecodeError)
+async def json_exception_handler(request: Request, exc: json.JSONDecodeError):
+    return JSONResponse(
+        status_code=400,
+        content={"error": "Invalid JSON", "details": str(exc)}
+    )
+
+@app.exception_handler(ValueError)
+async def value_error_handler(request: Request, exc: ValueError):
+    return JSONResponse(
+        status_code=400,
+        content={"error": "Invalid value", "details": str(exc)}
+    )
 
 # CORS настройки
 server_config = CONFIG.get('server', {})
@@ -383,6 +401,76 @@ def set_cached_response(cache_key: str, response: Dict):
         'timestamp': time.time()
     }
 
+def clean_llm_response(response: str) -> str:
+    """Очистка ответа LLM от артефактов генерации"""
+    if not response:
+        return response
+    
+    # Удаление артефактов типа "Created Question", "Created Answer"
+    response = re.sub(r'Created\s+(Question|Answer|Query|Response).*?```', '', response, flags=re.DOTALL | re.IGNORECASE)
+    
+    # Удаление множественных обратных кавычек в конце
+    response = re.sub(r'```+\s*$', '', response.strip())
+    
+    # Удаление одиночных блоков кода в конце
+    response = re.sub(r'```\s*$', '', response.strip())
+    
+    # Удаление повторяющихся блоков кода
+    # Находим все блоки кода
+    code_blocks = re.findall(r'```[\s\S]*?```', response)
+    seen_blocks = set()
+    for block in code_blocks:
+        if block in seen_blocks:
+            # Удаляем дубликат
+            response = response.replace(block, '', 1)
+        else:
+            seen_blocks.add(block)
+    
+    # Удаление артефактов типа "Human:", "Assistant:", "User:"
+    response = re.sub(r'^(Human|Assistant|User|AI):\s*', '', response, flags=re.MULTILINE)
+    
+    # Удаление лишних переносов строк
+    response = re.sub(r'\n{3,}', '\n\n', response)
+    
+    # Специальная очистка для артефактов в конце
+    # Удаляем незакрытые блоки кода
+    if response.count('```') % 2 != 0:
+        # Находим последний ```
+        last_backticks = response.rfind('```')
+        if last_backticks > 0:
+            # Проверяем, есть ли после него закрывающие кавычки
+            remaining = response[last_backticks + 3:]
+            if '```' not in remaining:
+                # Удаляем незакрытый блок
+                response = response[:last_backticks].rstrip()
+    
+    # Удаление обрывов на середине слова в конце
+    # Если текст заканчивается на неполное слово (без знака препинания)
+    if response and len(response) > 20:
+        # Проверяем последний символ
+        if response[-1] not in '.!?;:)]\'"»\n':
+            # Ищем последнее полное предложение
+            # Находим все позиции концов предложений
+            sentence_ends = []
+            for i, char in enumerate(response):
+                if char in '.!?' and i < len(response) - 1:
+                    # Проверяем, что после знака идет пробел или конец строки
+                    if i + 1 < len(response) and response[i + 1] in ' \n':
+                        sentence_ends.append(i + 1)
+            
+            # Если есть полные предложения, обрезаем до последнего
+            if sentence_ends and sentence_ends[-1] < len(response) - 10:
+                response = response[:sentence_ends[-1]].rstrip()
+    
+    # Финальная очистка пробелов
+    response = response.strip()
+    
+    # Убедимся, что ответ не пустой после всех очисток
+    if not response:
+        response = "Извините, не удалось сгенерировать корректный ответ."
+    
+    return response
+
 async def query_llm(prompt: str, model_name: str = None, quick_mode: bool = False) -> str:
     """Запрос к LLM"""
     llm_config = CONFIG['llm']
@@ -413,7 +501,8 @@ async def query_llm(prompt: str, model_name: str = None, quick_mode: bool = Fals
             if response.status_code != 200:
                 raise Exception(f"LLM API error: {response.status_code}")
             
-            return response.json()["choices"][0]["text"].strip()
+            raw_response = response.json()["choices"][0]["text"].strip()
+            return clean_llm_response(raw_response)
         
         except requests.exceptions.Timeout:
             if quick_mode:
@@ -442,7 +531,8 @@ async def query_llm(prompt: str, model_name: str = None, quick_mode: bool = Fals
             if response.status_code != 200:
                 raise Exception(f"Ollama API error: {response.status_code}")
             
-            return response.json()["response"].strip()
+            raw_response = response.json()["response"].strip()
+            return clean_llm_response(raw_response)
         
         except requests.exceptions.Timeout:
             if quick_mode:
@@ -927,6 +1017,101 @@ async def get_key_moment_types():
             for moment_type, importance in MOMENT_IMPORTANCE.items()
         ]
     }
+
+# Новые endpoints для HTTP-MCP интеграции
+@app.get("/session/current/context")
+async def get_current_session_context(project_name: Optional[str] = None):
+    """Получение контекста текущей сессии для MCP"""
+    if not session_manager:
+        raise HTTPException(status_code=503, detail="Session Manager не инициализирован")
+    
+    try:
+        # Если не указан проект, используем последний активный
+        if not project_name:
+            project_name = "default"
+        
+        session_id = session_manager.get_latest_session(project_name)
+        if not session_id:
+            # Создаем новую сессию
+            session_id = session_manager.create_session(project_name)
+        
+        context = session_manager.get_session_context(session_id)
+        return context
+    except Exception as e:
+        logger.error(f"Ошибка получения контекста текущей сессии: {e}")
+        raise HTTPException(status_code=500, detail="Ошибка получения контекста сессии")
+
+@app.post("/session/message")
+async def add_session_message(request: Request):
+    """Добавление сообщения в текущую сессию"""
+    if not session_manager:
+        raise HTTPException(status_code=503, detail="Session Manager не инициализирован")
+    
+    try:
+        data = await request.json()
+        project_name = data.get("project_name", "default")
+        role = data.get("role", "user")
+        content = data.get("content", "")
+        actions = data.get("actions", [])
+        files = data.get("files", [])
+        
+        # Получаем или создаем сессию
+        session_id = session_manager.get_latest_session(project_name)
+        if not session_id:
+            session_id = session_manager.create_session(project_name)
+        
+        # Добавляем сообщение
+        success = session_manager.add_message(
+            session_id, role, content, actions, files
+        )
+        
+        if not success:
+            raise HTTPException(status_code=500, detail="Не удалось добавить сообщение")
+        
+        return {"session_id": session_id, "message": "Сообщение добавлено"}
+    except Exception as e:
+        logger.error(f"Ошибка добавления сообщения в сессию: {e}")
+        raise HTTPException(status_code=500, detail="Ошибка добавления сообщения")
+
+@app.post("/session/key_moment")
+async def add_session_key_moment(request: Request):
+    """Добавление ключевого момента в текущую сессию"""
+    if not session_manager:
+        raise HTTPException(status_code=503, detail="Session Manager не инициализирован")
+    
+    try:
+        data = await request.json()
+        project_name = data.get("project_name", "default")
+        type_str = data.get("type", "IMPORTANT_DECISION")
+        title = data.get("title", "")
+        summary = data.get("summary", "")
+        files = data.get("files", [])
+        importance = data.get("importance")
+        
+        # Получаем или создаем сессию
+        session_id = session_manager.get_latest_session(project_name)
+        if not session_id:
+            session_id = session_manager.create_session(project_name)
+        
+        # Преобразуем тип
+        try:
+            moment_type = KeyMomentType(type_str)
+        except:
+            moment_type = KeyMomentType.IMPORTANT_DECISION
+        
+        # Добавляем ключевой момент
+        success = session_manager.add_key_moment(
+            session_id, moment_type, title, summary,
+            importance, files
+        )
+        
+        if not success:
+            raise HTTPException(status_code=500, detail="Не удалось добавить ключевой момент")
+        
+        return {"session_id": session_id, "message": "Ключевой момент добавлен"}
+    except Exception as e:
+        logger.error(f"Ошибка добавления ключевого момента: {e}")
+        raise HTTPException(status_code=500, detail="Ошибка добавления ключевого момента")
 
 # Запуск сервера
 if __name__ == "__main__":

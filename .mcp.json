@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "rag-server": {
+      "command": "node",
+      "args": ["mcp-server/http-mcp-server.js"],
+      "env": {
+        "RAG_SERVER_URL": "http://localhost:8000"
+      }
+    }
+  }
+}

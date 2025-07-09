@@ -167,13 +167,13 @@ llm:
   models:
     qwen:
       api_url: http://127.0.0.1:1234/v1/completions
-      max_tokens: 800
       model_name: qwen2.5-coder-3b-instruct-mlx
+      max_tokens: 2500
       temperature: 0.3
     deepseek:
       api_url: http://localhost:11434/api/generate
-      max_tokens: 800
       model_name: deepseek-r1:8b
+      max_tokens: 2500
       temperature: 0.3
   default_model: qwen  # Модель по умолчанию
 logging:
@@ -193,3 +193,22 @@ session_memory:
   auto_detect_moments: true
   cleanup_days: 30
   auto_save_interactions: true
+
+# Настройки MCP сервера
+mcp:
+  base_url: http://127.0.0.1:8200
+  chunk_limit_tokens: 4000
+  key_moments_limit: 10
+  tools_enabled:
+    - ask_rag
+    - get_recent_changes
+    - run_tests
+    - build_project
+    - apply_patch
+    - run_linters
+    - open_file
+    - list_frameworks
+    - list_models
+    - get_stats
+    - save_tool_call
+    - save_file_change
