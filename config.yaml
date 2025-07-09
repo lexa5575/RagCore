@@ -184,3 +184,12 @@ server:
   - '*'
   host: 0.0.0.0
   port: 8000
+# Настройки системы памяти
+session_memory:
+  enabled: true
+  db_path: "./session_storage.db"
+  max_messages: 200
+  compression_threshold: 50
+  auto_detect_moments: true
+  cleanup_days: 30
+  auto_save_interactions: true

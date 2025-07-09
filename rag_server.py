@@ -66,7 +66,18 @@ def init_embedder():
 # Глобальные объекты
 collection = init_database()
 embedder = init_embedder()
-session_manager = SessionManager()
+
+# Инициализация Session Manager
+session_config = CONFIG.get('session_memory', {})
+session_manager = None
+if session_config.get('enabled', True):
+    session_manager = SessionManager(
+        db_path=session_config.get('db_path', './session_storage.db'),
+        max_messages=session_config.get('max_messages', 200)
+    )
+    logger.info("Session Manager initialized")
+else:
+    logger.info("Session Manager disabled")
 
 # FastAPI приложение
 app = FastAPI(
@@ -96,8 +107,10 @@ class QueryRequest(BaseModel):
     model: Optional[str] = Field(None, description="Модель LLM (qwen или deepseek)")
     # Новые поля для интеграции с системой памяти
     project_name: Optional[str] = Field(None, description="Имя проекта для сессии")
+    project_path: Optional[str] = Field(None, description="Путь к проекту (для автоопределения)")
     session_id: Optional[str] = Field(None, description="ID существующей сессии")
     use_memory: bool = Field(True, description="Использовать контекст сессии")
+    save_to_memory: bool = Field(True, description="Сохранять взаимодействие в память")
 
 class IDEQueryRequest(BaseModel):
     question: str = Field(..., description="Вопрос от IDE")
@@ -108,8 +121,10 @@ class IDEQueryRequest(BaseModel):
     quick_mode: bool = Field(True, description="Быстрый режим для автодополнения")
     # Новые поля для интеграции с системой памяти
     project_name: Optional[str] = Field(None, description="Имя проекта для сессии")
+    project_path: Optional[str] = Field(None, description="Путь к проекту (для автоопределения)")
     session_id: Optional[str] = Field(None, description="ID существующей сессии")
     use_memory: bool = Field(True, description="Использовать контекст сессии")
+    save_to_memory: bool = Field(True, description="Сохранять взаимодействие в память")
 
 class QueryResponse(BaseModel):
     answer: str
@@ -149,25 +164,62 @@ def get_cache_key(question: str, framework: str = None) -> str:
     """Генерация ключа кэша"""
     return f"{question}:{framework or 'all'}"
 
+def extract_project_name(project_path: str) -> str:
+    """Извлечь имя проекта из пути"""
+    if not project_path:
+        return "default"
+    
+    # Нормализуем путь и убираем trailing slash
+    path = project_path.rstrip('/\\')
+    
+    # Извлекаем последнюю папку как имя проекта
+    if '/' in path:
+        project_name = path.split('/')[-1]
+    elif '\\' in path:
+        project_name = path.split('\\')[-1]
+    else:
+        project_name = path
+    
+    # Очищаем имя проекта от недопустимых символов
+    import re
+    project_name = re.sub(r'[^\w\-_.]', '_', project_name)
+    
+    return project_name or "default"
+
 def get_or_create_session(project_name: str, session_id: str = None) -> str:
     """Получение существующей сессии или создание новой"""
-    if session_id:
-        # Проверяем, что сессия существует
-        session = session_manager.get_session(session_id)
-        if session:
-            return session_id
+    if not session_manager:
+        logger.warning("Session Manager не инициализирован")
+        return None
     
-    if project_name:
-        # Пытаемся найти последнюю сессию проекта
-        existing_session = session_manager.get_latest_session(project_name)
-        if existing_session:
-            return existing_session
+    try:
+        if session_id:
+            # Проверяем, что сессия существует
+            session = session_manager.get_session(session_id)
+            if session:
+                logger.info(f"Используем существующую сессию: {session_id}")
+                return session_id
         
-        # Создаем новую сессию
-        return session_manager.create_session(project_name)
+        if project_name:
+            # Пытаемся найти последнюю сессию проекта
+            existing_session = session_manager.get_latest_session(project_name)
+            if existing_session:
+                logger.info(f"Найдена последняя сессия проекта {project_name}: {existing_session}")
+                return existing_session
+            
+            # Создаем новую сессию
+            new_session = session_manager.create_session(project_name)
+            logger.info(f"Создана новая сессия для проекта {project_name}: {new_session}")
+            return new_session
+        
+        # Создаем анонимную сессию
+        anonymous_session = session_manager.create_session("anonymous")
+        logger.info(f"Создана анонимная сессия: {anonymous_session}")
+        return anonymous_session
     
-    # Создаем анонимную сессию
-    return session_manager.create_session("anonymous")
+    except Exception as e:
+        logger.error(f"Ошибка при работе с сессией: {e}")
+        return None
 
 def build_context_with_memory(question: str, framework: str = None, 
                              session_id: str = None, base_context: str = None) -> Tuple[str, bool]:
@@ -211,6 +263,93 @@ def build_context_with_memory(question: str, framework: str = None,
         context_parts.append(f"[Additional Context]\n{base_context}")
     
     return "\n\n".join(context_parts), True
+
+def build_enhanced_prompt(base_prompt: str, session_context: dict = None) -> str:
+    """Обогатить промпт контекстом сессии"""
+    if not session_context:
+        return base_prompt
+    
+    enhancement_parts = []
+    
+    # Добавляем информацию о проекте
+    if session_context.get('project_name'):
+        enhancement_parts.append(f"[Project: {session_context['project_name']}]")
+    
+    # Добавляем ключевые моменты из сессии
+    if session_context.get('key_moments'):
+        enhancement_parts.append("[Key Moments from Session]")
+        for moment in session_context['key_moments'][:3]:  # Топ 3 момента
+            enhancement_parts.append(f"- {moment['title']}: {moment['summary']}")
+    
+    # Добавляем краткую историю
+    if session_context.get('compressed_history'):
+        enhancement_parts.append("[Previous Work Summary]")
+        for period in session_context['compressed_history'][-1:]:  # Последний период
+            enhancement_parts.append(f"- {period['summary']}")
+    
+    # Добавляем недавний контекст
+    if session_context.get('recent_messages'):
+        enhancement_parts.append("[Recent Context]")
+        recent_messages = session_context['recent_messages'][-3:]  # Последние 3 сообщения
+        for msg in recent_messages:
+            role = "User" if msg['role'] == 'user' else "Assistant"
+            enhancement_parts.append(f"{role}: {msg['content'][:100]}...")
+    
+    if enhancement_parts:
+        enhanced_prompt = "\n\n".join(enhancement_parts) + "\n\n" + base_prompt
+    else:
+        enhanced_prompt = base_prompt
+    
+    return enhanced_prompt
+
+def save_interaction_to_session(session_id: str, question: str, answer: str, 
+                               framework: str = None, files: List[str] = None,
+                               actions: List[str] = None):
+    """Сохранить взаимодействие в сессию с автообнаружением ключевых моментов"""
+    if not session_manager or not session_id:
+        return
+    
+    try:
+        # Сохраняем сообщение пользователя
+        session_manager.add_message(
+            session_id,
+            "user",
+            question,
+            actions=actions or ["ask_question"],
+            files=files or [],
+            metadata={"framework": framework}
+        )
+        
+        # Сохраняем ответ ассистента
+        session_manager.add_message(
+            session_id,
+            "assistant", 
+            answer,
+            actions=actions or ["provide_answer"],
+            files=files or [],
+            metadata={"framework": framework}
+        )
+        
+        # Автоматическое обнаружение ключевых моментов
+        session_config = CONFIG.get('session_memory', {})
+        if session_config.get('auto_detect_moments', True):
+            detected_moments = auto_detect_key_moments(answer, actions or ["provide_answer"], files or [])
+            
+            for moment_type, title, summary in detected_moments:
+                session_manager.add_key_moment(
+                    session_id,
+                    moment_type,
+                    title,
+                    summary,
+                    files=files or [],
+                    context=question
+                )
+                logger.info(f"Автоматически обнаружен ключевой момент: {title}")
+        
+        logger.info(f"Взаимодействие сохранено в сессию {session_id}")
+        
+    except Exception as e:
+        logger.error(f"Ошибка при сохранении взаимодействия: {e}")
 
 def get_cached_response(cache_key: str) -> Optional[Dict]:
     """Получение ответа из кэша"""
@@ -341,6 +480,7 @@ async def root():
             "/stats": "GET - Статистика документов",
             "/frameworks": "GET - Список фреймворков",
             "/sessions/create": "POST - Создать новую сессию",
+            "/sessions/latest": "GET - Последняя сессия проекта",
             "/sessions/{session_id}": "GET - Информация о сессии",
             "/sessions/project/{project_name}": "GET - Сессии проекта",
             "/sessions/{session_id}/key-moment": "POST - Добавить ключевой момент",
@@ -348,6 +488,10 @@ async def root():
             "/sessions/cleanup": "POST - Очистить старые сессии",
             "/sessions/stats": "GET - Статистика сессий",
             "/sessions/key-moment-types": "GET - Типы ключевых моментов"
+        },
+        "session_memory": {
+            "enabled": session_manager is not None,
+            "config": CONFIG.get('session_memory', {}) if session_manager else None
         }
     }
 
@@ -408,12 +552,26 @@ async def ask_question(data: QueryRequest):
     """Основной endpoint для вопросов"""
     start_time = time.time()
     
-    # Управление сессией
+    # 1. Определить проект и сессию
+    project_name = data.project_name
+    if not project_name and data.project_path:
+        project_name = extract_project_name(data.project_path)
+    
     current_session_id = None
     session_context_used = False
+    session_context = None
     
-    if data.use_memory and (data.project_name or data.session_id):
-        current_session_id = get_or_create_session(data.project_name, data.session_id)
+    if data.use_memory and session_manager:
+        current_session_id = get_or_create_session(project_name, data.session_id)
+        
+        # 2. Получить контекст сессии
+        if current_session_id:
+            try:
+                session_context = session_manager.get_session_context(current_session_id)
+                session_context_used = True
+                logger.info(f"Получен контекст сессии {current_session_id}")
+            except Exception as e:
+                logger.error(f"Ошибка получения контекста сессии: {e}")
     
     # Проверяем кэш (учитываем сессию в ключе)
     cache_key = get_cache_key(data.question, data.framework)
@@ -461,22 +619,13 @@ async def ask_question(data: QueryRequest):
     
     doc_context = "\n\n".join(doc_context_parts)
     
-    # Создаем контекст с учетом памяти сессии
-    memory_context = ""
-    if current_session_id:
-        memory_context, session_context_used = build_context_with_memory(
-            data.question, data.framework, current_session_id, data.context
-        )
-    
     # Адаптивный промпт
     framework_title = main_framework.title() if main_framework != "unknown" else "Web Development"
     
-    prompt_parts = [f"[{framework_title} Documentation Context]", doc_context]
-    
-    if memory_context:
-        prompt_parts.extend(["[Session Memory Context]", memory_context])
-    
-    prompt_parts.extend([
+    # Создаем базовый промпт
+    base_prompt_parts = [
+        f"[{framework_title} Documentation Context]",
+        doc_context,
         "[User Question]",
         data.question,
         "[Additional Context]",
@@ -489,51 +638,48 @@ async def ask_question(data: QueryRequest):
         "- Be concise but comprehensive",
         "",
         "[Answer]"
-    ])
+    ]
     
-    prompt = "\n\n".join(prompt_parts)
+    base_prompt = "\n\n".join(base_prompt_parts)
+    
+    # 3. Обогатить промпт контекстом сессии
+    enhanced_prompt = build_enhanced_prompt(base_prompt, session_context)
     
     # Получаем ответ от LLM
-    answer = await query_llm(prompt, data.model)
+    answer = await query_llm(enhanced_prompt, data.model)
     
-    # Автоматическое обнаружение ключевых моментов
+    # 4. Сохранить диалог в сессию
     key_moments_detected = []
-    if current_session_id:
-        # Добавляем сообщение пользователя в сессию
-        session_manager.add_message(
-            current_session_id, 
-            "user", 
-            data.question,
-            actions=["ask_question"],
-            files=[],
-            metadata={"framework": data.framework, "model": data.model}
-        )
-        
-        # Добавляем ответ ассистента
-        session_manager.add_message(
-            current_session_id,
-            "assistant",
-            answer,
-            actions=["provide_answer"],
-            files=[],
-            metadata={"framework": main_framework, "sources_count": len(documents)}
-        )
-        
-        # Автоматическое обнаружение ключевых моментов
-        detected_moments = auto_detect_key_moments(answer, ["provide_answer"], [])
-        for moment_type, title, summary in detected_moments:
-            session_manager.add_key_moment(
+    if current_session_id and data.save_to_memory:
+        try:
+            # Извлекаем файлы из контекста если есть
+            files_involved = []
+            if data.context:
+                # Простая эвристика для обнаружения файлов в контексте
+                import re
+                file_matches = re.findall(r'(\w+\.[a-zA-Z]{1,5})', data.context)
+                files_involved.extend(file_matches)
+            
+            # Сохраняем взаимодействие
+            save_interaction_to_session(
                 current_session_id,
-                moment_type,
-                title,
-                summary,
-                context=data.question
+                data.question,
+                answer,
+                framework=main_framework,
+                files=files_involved,
+                actions=["ask_question", "provide_answer"]
             )
-            key_moments_detected.append({
-                "type": moment_type.value,
-                "title": title,
-                "summary": summary
-            })
+            
+            # Получаем обнаруженные ключевые моменты
+            detected_moments = auto_detect_key_moments(answer, ["provide_answer"], files_involved)
+            for moment_type, title, summary in detected_moments:
+                key_moments_detected.append({
+                    "type": moment_type.value,
+                    "title": title,
+                    "summary": summary
+                })
+        except Exception as e:
+            logger.error(f"Ошибка при сохранении в сессию: {e}")
     
     # Формируем ответ
     response_data = {
@@ -578,11 +724,11 @@ async def ide_ask_question(data: IDEQueryRequest):
     
     # Автоматическое определение имени проекта из пути файла
     project_name = data.project_name
-    if not project_name and data.file_path:
+    if not project_name and data.project_path:
+        project_name = extract_project_name(data.project_path)
+    elif not project_name and data.file_path:
         # Извлекаем имя проекта из пути файла
-        path_parts = data.file_path.split('/')
-        if len(path_parts) > 1:
-            project_name = path_parts[-2] if path_parts[-1] else path_parts[-3]
+        project_name = extract_project_name(data.file_path)
     
     # Создаем запрос
     query_request = QueryRequest(
@@ -591,8 +737,10 @@ async def ide_ask_question(data: IDEQueryRequest):
         max_results=3 if data.quick_mode else 5,
         context="\n".join(ide_context) if ide_context else None,
         project_name=project_name,
+        project_path=data.project_path,
         session_id=data.session_id,
-        use_memory=data.use_memory
+        use_memory=data.use_memory,
+        save_to_memory=data.save_to_memory
     )
     
     # Используем основную логику
@@ -615,66 +763,145 @@ async def clear_cache():
 @app.post("/sessions/create")
 async def create_session(project_name: str):
     """Создание новой сессии"""
-    session_id = session_manager.create_session(project_name)
-    return {"session_id": session_id, "project_name": project_name}
+    if not session_manager:
+        raise HTTPException(status_code=503, detail="Session Manager не инициализирован")
+    
+    try:
+        session_id = session_manager.create_session(project_name)
+        logger.info(f"Создана новая сессия {session_id} для проекта {project_name}")
+        return {"session_id": session_id, "project_name": project_name}
+    except Exception as e:
+        logger.error(f"Ошибка создания сессии: {e}")
+        raise HTTPException(status_code=500, detail="Ошибка создания сессии")
+
+@app.get("/sessions/latest")
+async def get_latest_session(project_name: str):
+    """Получение последней сессии проекта"""
+    if not session_manager:
+        raise HTTPException(status_code=503, detail="Session Manager не инициализирован")
+    
+    try:
+        session_id = session_manager.get_latest_session(project_name)
+        if not session_id:
+            raise HTTPException(status_code=404, detail="Сессия не найдена")
+        
+        session_context = session_manager.get_session_context(session_id)
+        return {"session_id": session_id, "project_name": project_name, "context": session_context}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Ошибка получения последней сессии: {e}")
+        raise HTTPException(status_code=500, detail="Ошибка получения сессии")
 
 @app.get("/sessions/{session_id}")
 async def get_session_info(session_id: str):
     """Получение информации о сессии"""
-    session_context = session_manager.get_session_context(session_id)
-    if not session_context:
-        raise HTTPException(status_code=404, detail="Сессия не найдена")
-    return session_context
+    if not session_manager:
+        raise HTTPException(status_code=503, detail="Session Manager не инициализирован")
+    
+    try:
+        session_context = session_manager.get_session_context(session_id)
+        if not session_context:
+            raise HTTPException(status_code=404, detail="Сессия не найдена")
+        return session_context
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Ошибка получения информации о сессии: {e}")
+        raise HTTPException(status_code=500, detail="Ошибка получения информации о сессии")
 
 @app.get("/sessions/project/{project_name}")
 async def get_project_sessions(project_name: str):
     """Получение всех сессий проекта"""
-    sessions = session_manager.get_project_sessions(project_name)
-    return {"project_name": project_name, "sessions": sessions}
+    if not session_manager:
+        raise HTTPException(status_code=503, detail="Session Manager не инициализирован")
+    
+    try:
+        sessions = session_manager.get_project_sessions(project_name)
+        return {"project_name": project_name, "sessions": sessions}
+    except Exception as e:
+        logger.error(f"Ошибка получения сессий проекта: {e}")
+        raise HTTPException(status_code=500, detail="Ошибка получения сессий проекта")
 
 @app.post("/sessions/{session_id}/key-moment")
 async def add_key_moment(session_id: str, moment_type: str, title: str, 
                         summary: str, importance: int = None, 
                         files: List[str] = None, context: str = ""):
     """Добавление ключевого момента в сессию"""
+    if not session_manager:
+        raise HTTPException(status_code=503, detail="Session Manager не инициализирован")
+    
     try:
         moment_type_enum = KeyMomentType(moment_type)
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Неизвестный тип момента: {moment_type}")
     
-    success = session_manager.add_key_moment(
-        session_id, moment_type_enum, title, summary, 
-        importance, files or [], context
-    )
-    
-    if not success:
-        raise HTTPException(status_code=404, detail="Сессия не найдена")
-    
-    return {"message": "Ключевой момент добавлен", "session_id": session_id}
+    try:
+        success = session_manager.add_key_moment(
+            session_id, moment_type_enum, title, summary, 
+            importance, files or [], context
+        )
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Сессия не найдена")
+        
+        logger.info(f"Добавлен ключевой момент в сессию {session_id}: {title}")
+        return {"message": "Ключевой момент добавлен", "session_id": session_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Ошибка добавления ключевого момента: {e}")
+        raise HTTPException(status_code=500, detail="Ошибка добавления ключевого момента")
 
 @app.post("/sessions/{session_id}/archive")
 async def archive_session(session_id: str):
     """Архивирование сессии"""
-    success = session_manager.archive_session(session_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Сессия не найдена")
-    return {"message": "Сессия заархивирована", "session_id": session_id}
+    if not session_manager:
+        raise HTTPException(status_code=503, detail="Session Manager не инициализирован")
+    
+    try:
+        success = session_manager.archive_session(session_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Сессия не найдена")
+        
+        logger.info(f"Сессия {session_id} заархивирована")
+        return {"message": "Сессия заархивирована", "session_id": session_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Ошибка архивирования сессии: {e}")
+        raise HTTPException(status_code=500, detail="Ошибка архивирования сессии")
 
 @app.post("/sessions/cleanup")
 async def cleanup_sessions(days_threshold: int = 30):
     """Очистка старых сессий"""
-    archived_count, deleted_count = session_manager.cleanup_old_sessions(days_threshold)
-    return {
-        "message": "Очистка завершена",
-        "archived_sessions": archived_count,
-        "deleted_sessions": deleted_count
-    }
+    if not session_manager:
+        raise HTTPException(status_code=503, detail="Session Manager не инициализирован")
+    
+    try:
+        archived_count, deleted_count = session_manager.cleanup_old_sessions(days_threshold)
+        logger.info(f"Очистка сессий завершена: {archived_count} архивированных, {deleted_count} удаленных")
+        return {
+            "message": "Очистка завершена",
+            "archived_sessions": archived_count,
+            "deleted_sessions": deleted_count
+        }
+    except Exception as e:
+        logger.error(f"Ошибка очистки сессий: {e}")
+        raise HTTPException(status_code=500, detail="Ошибка очистки сессий")
 
 @app.get("/sessions/stats")
 async def get_session_stats():
     """Статистика системы сессий"""
-    stats = session_manager.get_stats()
-    return stats
+    if not session_manager:
+        raise HTTPException(status_code=503, detail="Session Manager не инициализирован")
+    
+    try:
+        stats = session_manager.get_stats()
+        return stats
+    except Exception as e:
+        logger.error(f"Ошибка получения статистики сессий: {e}")
+        raise HTTPException(status_code=500, detail="Ошибка получения статистики сессий")
 
 @app.get("/sessions/key-moment-types")
 async def get_key_moment_types():
