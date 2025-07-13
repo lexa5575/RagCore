@@ -925,7 +925,7 @@ async def add_key_moment(session_id: str, request: Request):
         title = data.get("title")
         summary = data.get("summary")
         importance = data.get("importance")
-        files = data.get("files", [])
+        files = data.get("files_involved", data.get("files", []))
         context = data.get("context", "")
         
         if not moment_type or not title or not summary:
@@ -1112,6 +1112,281 @@ async def add_session_key_moment(request: Request):
     except Exception as e:
         logger.error(f"Ошибка добавления ключевого момента: {e}")
         raise HTTPException(status_code=500, detail="Ошибка добавления ключевого момента")
+
+# Эндпоинты для работы с FileSnapshot
+@app.post("/file-snapshots/save")
+async def save_file_snapshot(request: Dict[str, Any]):
+    """Сохранение снимка файла"""
+    try:
+        session_id = request.get('session_id')
+        file_path = request.get('file_path')
+        content = request.get('content')
+        language = request.get('language', '')
+        
+        if not all([session_id, file_path, content]):
+            raise HTTPException(status_code=400, detail="Требуются поля: session_id, file_path, content")
+        
+        snapshot_id = session_manager.save_file_snapshot(
+            session_id=session_id,
+            file_path=file_path,
+            content=content,
+            language=language
+        )
+        
+        return {
+            "snapshot_id": snapshot_id,
+            "file_path": file_path,
+            "language": language or session_manager._detect_language(file_path),
+            "size_bytes": len(content.encode('utf-8'))
+        }
+        
+    except Exception as e:
+        logger.error(f"Ошибка сохранения снимка файла: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/file-snapshots/search")
+async def search_file_content(query: str, language: str = "", limit: int = 10):
+    """Поиск по содержимому файлов"""
+    try:
+        results = session_manager.search_file_content(
+            query=query,
+            language=language, 
+            limit=limit
+        )
+        
+        return {
+            "query": query,
+            "language": language,
+            "results": results,
+            "total_found": len(results)
+        }
+        
+    except Exception as e:
+        logger.error(f"Ошибка поиска по файлам: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/file-snapshots/history/{file_path:path}")
+async def get_file_history(file_path: str):
+    """Получение истории изменений файла"""
+    try:
+        history = session_manager.get_file_history(file_path)
+        
+        return {
+            "file_path": file_path,
+            "history": history,
+            "total_versions": len(history)
+        }
+        
+    except Exception as e:
+        logger.error(f"Ошибка получения истории файла: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/code-snippets/create")
+async def create_code_snippet(request: Dict[str, Any]):
+    """Создание фрагмента кода"""
+    try:
+        file_snapshot_id = request.get('file_snapshot_id')
+        content = request.get('content')
+        start_line = request.get('start_line')
+        end_line = request.get('end_line')
+        context_before = request.get('context_before', '')
+        context_after = request.get('context_after', '')
+        
+        if not all([file_snapshot_id, content, start_line is not None, end_line is not None]):
+            raise HTTPException(
+                status_code=400, 
+                detail="Требуются поля: file_snapshot_id, content, start_line, end_line"
+            )
+        
+        snippet_id = session_manager.create_code_snippet(
+            file_snapshot_id=file_snapshot_id,
+            content=content,
+            start_line=start_line,
+            end_line=end_line,
+            context_before=context_before,
+            context_after=context_after
+        )
+        
+        return {
+            "snippet_id": snippet_id,
+            "file_snapshot_id": file_snapshot_id,
+            "lines": f"{start_line}-{end_line}"
+        }
+        
+    except Exception as e:
+        logger.error(f"Ошибка создания фрагмента кода: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Эндпоинты для Memory Bank
+@app.post("/memory-bank/init")
+async def init_memory_bank(request: Dict[str, Any]):
+    """Инициализация Memory Bank для проекта"""
+    try:
+        project_root = request.get('project_root', '.')
+        
+        from session_manager import MemoryBankManager
+        memory_bank = MemoryBankManager(project_root)
+        
+        return {
+            "message": "Memory Bank инициализирован",
+            "project_root": project_root,
+            "memory_bank_dir": str(memory_bank.memory_bank_dir)
+        }
+        
+    except Exception as e:
+        logger.error(f"Ошибка инициализации Memory Bank: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/memory-bank/context")
+async def get_memory_bank_context(project_root: str = ".", context_type: str = "active"):
+    """Получение контекста Memory Bank по типу"""
+    try:
+        from session_manager import MemoryBankManager
+        memory_bank = MemoryBankManager(project_root)
+        
+        # Получаем содержимое конкретного файла
+        context_files = {
+            "project": "project-context.md",
+            "active": "active-context.md", 
+            "progress": "progress.md",
+            "decisions": "decisions.md",
+            "patterns": "code-patterns.md"
+        }
+        
+        filename = context_files.get(context_type, "active-context.md")
+        file_path = memory_bank.memory_bank_dir / filename
+        
+        if file_path.exists():
+            content = file_path.read_text(encoding='utf-8')
+        else:
+            content = f"Файл {filename} не найден"
+            
+        return {
+            "filename": filename,
+            "content": content
+        }
+        
+    except Exception as e:
+        logger.error(f"Ошибка получения контекста Memory Bank: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/memory-bank/update-active-context")
+async def update_active_context(request: Dict[str, Any]):
+    """Обновление активного контекста"""
+    try:
+        project_root = request.get('project_root', '.')
+        session_state = request.get('session_state', '')
+        tasks = request.get('tasks', [])
+        decisions = request.get('decisions', [])
+        
+        from session_manager import MemoryBankManager
+        memory_bank = MemoryBankManager(project_root)
+        
+        memory_bank.update_active_context(session_state, tasks, decisions)
+        
+        return {
+            "message": "Активный контекст обновлен",
+            "session_state": session_state
+        }
+        
+    except Exception as e:
+        logger.error(f"Ошибка обновления активного контекста: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/memory-bank/add-decision")  
+async def add_decision(request: Dict[str, Any]):
+    """Добавление нового решения"""
+    try:
+        project_root = request.get('project_root', '.')
+        title = request.get('title')
+        context = request.get('context')
+        decision = request.get('decision')
+        consequences = request.get('consequences')
+        
+        if not all([title, context, decision, consequences]):
+            raise HTTPException(
+                status_code=400,
+                detail="Требуются поля: title, context, decision, consequences"
+            )
+        
+        from session_manager import MemoryBankManager
+        memory_bank = MemoryBankManager(project_root)
+        
+        memory_bank.add_decision(title, context, decision, consequences)
+        
+        return {
+            "message": "Решение добавлено",
+            "title": title
+        }
+        
+    except Exception as e:
+        logger.error(f"Ошибка добавления решения: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/memory-bank/search")
+async def search_memory_bank(query: str, project_root: str = "."):
+    """Поиск по Memory Bank"""
+    try:
+        from session_manager import MemoryBankManager
+        memory_bank = MemoryBankManager(project_root)
+        
+        search_results = memory_bank.search_memory_bank(query)
+        
+        # Форматируем результаты для MCP
+        formatted_results = []
+        for result in search_results:
+            formatted_results.append({
+                "filename": result["file"],
+                "line_number": result["line_number"],
+                "preview": result["match_line"][:150] + "..." if len(result["match_line"]) > 150 else result["match_line"],
+                "context": result["context"]
+            })
+        
+        return {
+            "query": query,
+            "results": formatted_results,
+            "total_found": len(formatted_results)
+        }
+        
+    except Exception as e:
+        logger.error(f"Ошибка поиска в Memory Bank: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Эндпоинты для поиска по символам кода
+@app.get("/code-symbols/search")
+async def search_code_symbols(query: str, symbol_type: str = "", language: str = "", limit: int = 20):
+    """Поиск по символам кода (функции, классы, переменные)"""
+    try:
+        results = session_manager.search_symbols(
+            query=query,
+            symbol_type=symbol_type,
+            language=language,
+            limit=limit
+        )
+        
+        return {
+            "query": query,
+            "symbol_type": symbol_type,
+            "language": language,
+            "results": results,
+            "total_found": len(results)
+        }
+        
+    except Exception as e:
+        logger.error(f"Ошибка поиска символов: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/code-symbols/types")
+async def get_symbol_types():
+    """Получение доступных типов символов"""
+    return {
+        "symbol_types": [
+            {"type": "function", "description": "Функции и методы"},
+            {"type": "class", "description": "Классы и интерфейсы"},
+            {"type": "variable", "description": "Переменные и константы"},
+            {"type": "import", "description": "Импорты и зависимости"}
+        ]
+    }
 
 # Запуск сервера
 if __name__ == "__main__":
