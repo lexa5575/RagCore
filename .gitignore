@@ -180,6 +180,10 @@ config.local.yaml
 *.personal.yaml
 *.private.yaml
 
+# Персональный config.yaml с абсолютными путями
+# Используйте config.example.yaml как базу
+config.yaml
+
 # Claude AI настройки (если используется)
 .claude/
 CLAUDE.md

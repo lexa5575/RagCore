@@ -114,15 +114,17 @@ cp -r /path/to/react_docs documentation/react_docs
 *This will install all dependencies and check your system*
 
 #### 2. Configure Your Local LLM (One-time setup)
-The system automatically creates `config.local.yaml` during installation. **You must configure it once for your LLM setup:**
+**The project uses universal relative paths - no manual path configuration needed!**
+
+Simply edit the LLM section in `config.yaml`:
 
 ```bash
-# Edit your local LLM configuration
-nano config.local.yaml
+# Edit your LLM configuration
+nano config.yaml
 ```
 
 **For LM Studio users (recommended):**
-- Keep default settings in `config.local.yaml`
+- Keep default settings in `config.yaml`
 - Just change `model_name` to your loaded model name
 - Ensure LM Studio server is running on port 1234
 
@@ -137,10 +139,10 @@ llm:
 ```
 
 **For other LLM services:**
-- Edit the appropriate section in `config.local.yaml`
-- See examples for OpenAI API, DeepSeek, and custom models
+- Edit the appropriate section in `config.yaml`
+- All paths are automatically relative - works on any system!
 
-**⚠️ Important:** This is a **one-time setup**. After configuring your LLM, you'll never need to touch this again!
+**✅ Universal Setup:** The project now uses relative paths - works on Windows, macOS, and Linux without any path modifications!
 
 #### 3. 📁 Add Documentation to `documentation/` Folder
 

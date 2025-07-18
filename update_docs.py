@@ -72,7 +72,7 @@ class SimpleDocumentationManager:
                     frameworks[framework_name] = {
                         'name': self._create_display_name(framework_name),
                         'description': f"{self._create_display_name(framework_name)} Documentation",
-                        'path': str(folder.absolute()),
+                        'path': f"./documentation/{folder.name}",
                         'type': 'markdown',
                         'enabled': True,
                         'md_files': len(md_files),
