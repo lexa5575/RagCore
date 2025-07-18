@@ -19,7 +19,7 @@
 
 This project combines a powerful **RAG (Retrieval-Augmented Generation) server** with an intelligent **Memory Bank system** to create the ultimate development assistant. It provides:
 
-- **📚 Smart Documentation Search** - Query documentation for Laravel, Vue.js, Filament, Alpine.js, and Tailwind CSS
+- **📚 Smart Documentation Search** - Query documentation for any framework or technology (React, Vue.js, Laravel, Django, Angular, Next.js, and many more)
 - **🧠 Project Memory** - Automatically tracks project context, tasks, and development history
 - **👁️ File Monitoring** - Real-time tracking of code changes and key development moments
 - **🔗 Unified Interface** - Single MCP server integrating all components
@@ -81,16 +81,16 @@ cd ..
 2. **Download meta-llama-3.1-8b-instruct model**
 3. **Start local server** on `http://127.0.0.1:1234` (LM Studio) or `http://localhost:11434` (Ollama)
 
-#### Step 4: Configure Framework Documentation
+#### Step 4: Universal Framework Support
 ```bash
-# The system supports these frameworks out of the box:
-# - Laravel (laravel_docs/)
-# - Vue.js (vue_docs/)  
-# - Filament (filament_docs/)
-# - Alpine.js (alpine_docs/)
-# - Tailwind CSS (tailwindcss_docs/)
+# The system supports ANY framework or technology out of the box:
+# - Frontend: React, Vue.js, Angular, Svelte, Next.js, Nuxt.js
+# - Backend: Laravel, Django, FastAPI, Spring Boot, .NET Core, Express.js
+# - Mobile: React Native, Flutter, Ionic
+# - CSS: Tailwind CSS, Bootstrap, Material-UI, Chakra UI
+# - And ANY other technology with documentation!
 
-# Documentation paths are configured in config.yaml
+# Documentation paths are automatically configured in config.yaml
 ```
 
 #### Step 5: Add Documentation to documentation/ folder
@@ -151,16 +151,21 @@ llm:
 mkdir -p documentation
 
 # Copy your documentation folders to documentation/ directory
-# Examples:
-cp -r /path/to/laravel_docs documentation/
-cp -r /path/to/vue_docs documentation/
+# Examples for ANY technology:
 cp -r /path/to/react_docs documentation/
+cp -r /path/to/angular_docs documentation/
 cp -r /path/to/django_docs documentation/
+cp -r /path/to/fastapi_docs documentation/
+cp -r /path/to/nextjs_docs documentation/
+cp -r /path/to/spring_docs documentation/
 
 # Or clone directly into documentation/ folder:
+git clone https://github.com/facebook/react.git documentation/react_docs
+git clone https://github.com/angular/angular.git documentation/angular_docs
+git clone https://github.com/django/django.git documentation/django_docs
+git clone https://github.com/tiangolo/fastapi.git documentation/fastapi_docs
+git clone https://github.com/vercel/next.js.git documentation/nextjs_docs
 git clone https://github.com/vuejs/docs.git documentation/vue_docs
-git clone https://github.com/laravel/docs.git documentation/laravel_docs
-git clone https://github.com/filamentphp/filament.git documentation/filament_docs
 ```
 
 **📋 Folder naming examples:**
@@ -343,44 +348,62 @@ The system automatically recognizes frameworks by folder names:
 
 ### 💡 Usage Examples
 
-#### Laravel Development
+#### React Development
 ```
-# Get Laravel-specific help
-ask_rag("How to create middleware in Laravel?", "laravel")
+# Get React-specific help
+ask_rag("How to use React hooks effectively?", "react")
 
 # Track your work
-memory_bank_write("activeContext.md", "Working on authentication middleware")
+memory_bank_write("activeContext.md", "Building React components with hooks")
 
 # Start monitoring changes
 file_watcher_start()
 
 # Search project history
-memory_bank_search("middleware")
+memory_bank_search("hooks")
 ```
 
-#### Vue.js Development
+#### Django API Development
 ```
-# Learn about Vue components
-ask_rag("How to use Composition API in Vue 3?", "vue")
+# Learn about Django REST framework
+ask_rag("How to create serializers in Django REST?", "django")
 
 # Update project progress
-memory_bank_write("progress.md", "## Current Task\nImplementing reactive forms with Composition API")
+memory_bank_write("progress.md", "## Current Task\nImplementing REST API with Django")
 
 # Archive completed feature
-memory_bank_archive("vue-forms", {
-  "summary": "Implemented reactive forms",
-  "completedWork": "Created form components with validation",
-  "keyDecisions": "Used Composition API for better reusability"
+memory_bank_archive("django-api", {
+  "summary": "Implemented REST API endpoints",
+  "completedWork": "Created serializers and viewsets",
+  "keyDecisions": "Used Django REST framework for API consistency"
 })
 ```
 
-#### Filament Admin Panel
+#### Angular Development
 ```
-# Get Filament guidance
-ask_rag("How to create a resource in Filament?", "filament")
+# Get Angular guidance
+ask_rag("How to implement reactive forms in Angular?", "angular")
 
-# Track admin panel development
-memory_bank_write("techContext.md", "Building admin panel with Filament v3")
+# Track frontend development
+memory_bank_write("techContext.md", "Building Angular SPA with reactive forms")
+```
+
+#### FastAPI Backend
+```
+# Learn FastAPI patterns
+ask_rag("How to implement dependency injection in FastAPI?", "fastapi")
+
+# Document API development
+memory_bank_write("progress.md", "## API Development\nImplementing FastAPI with async endpoints")
+```
+
+#### Next.js Full-Stack
+```
+# Get Next.js help
+ask_rag("How to implement SSR in Next.js 14?", "nextjs")
+
+# Track full-stack development
+memory_bank_write("activeContext.md", "Building Next.js app with SSR and API routes")
 ```
 
 ### 🔧 Configuration
@@ -499,7 +522,7 @@ list_frameworks()         # Available frameworks
 
 Этот проект объединяет мощный **RAG (Retrieval-Augmented Generation) сервер** с интеллектуальной системой **Memory Bank** для создания идеального помощника разработчика. Система предоставляет:
 
-- **📚 Умный поиск по документации** - Запросы к документации Laravel, Vue.js, Filament, Alpine.js и Tailwind CSS
+- **📚 Умный поиск по документации** - Запросы к документации любых фреймворков и технологий (React, Vue.js, Laravel, Django, Angular, Next.js и многих других)
 - **🧠 Память проекта** - Автоматическое отслеживание контекста проекта, задач и истории разработки
 - **👁️ Мониторинг файлов** - Отслеживание изменений кода и ключевых моментов разработки в реальном времени
 - **🔗 Единый интерфейс** - Один MCP сервер, объединяющий все компоненты
