@@ -1,0 +1,58 @@
+# 🚀 RAG Server Configuration Example
+# Copy this file to config.yaml and edit the LLM section
+
+# 📚 Database settings
+database:
+  collection_name: universal_docs
+  path: ./chroma_storage
+
+# 🤖 LLM Configuration (EDIT THIS SECTION!)
+llm:
+  default_model: qwen  # Change to: qwen, ollama, or deepseek
+  models:
+    # === LM Studio (recommended) ===
+    qwen:
+      api_url: http://127.0.0.1:1234/v1/completions
+      model_name: meta-llama-3.1-8b-instruct  # Change to your model name
+      max_tokens: 800
+      temperature: 0.2
+      stop: ["<|eot_id|>", "<|end_of_text|>", "Human:", "User:"]
+    
+    # === Ollama ===
+    ollama:
+      api_url: http://localhost:11434/api/generate
+      model_name: llama3.1:8b  # Change to your Ollama model
+      max_tokens: 800
+      temperature: 0.2
+    
+    # === DeepSeek (via Ollama) ===
+    deepseek:
+      api_url: http://localhost:11434/api/generate
+      model_name: deepseek-r1:8b
+      max_tokens: 800
+      temperature: 0.2
+
+# 🌐 Server settings
+server:
+  host: 0.0.0.0
+  port: 8000
+
+# 📁 Frameworks (auto-updated by update_docs.py)
+frameworks:
+  # This section is automatically managed
+  # Add your documentation to documentation/ folder
+  # Run: python3 update_docs.py
+
+# 📊 Logging
+logging:
+  level: INFO
+  file: ./logs/rag_system.log
+
+# 💾 Cache settings
+cache:
+  enabled: true
+  ttl: 3600
+
+# 🔧 Embeddings
+embeddings:
+  model: all-MiniLM-L6-v2

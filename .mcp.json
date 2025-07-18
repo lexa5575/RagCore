@@ -6,6 +6,13 @@
       "env": {
         "RAG_SERVER_URL": "http://localhost:8000"
       }
+    },
+    "enhanced-rag-memory-bank": {
+      "command": "node",
+      "args": ["mcp-server/enhanced-mcp-server.js"],
+      "env": {
+        "RAG_SERVER_URL": "http://localhost:8000"
+      }
     }
   }
 }

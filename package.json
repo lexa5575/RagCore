@@ -1,5 +1,40 @@
 {
+  "name": "ragcore",
+  "version": "1.0.0",
+  "description": "Advanced RAG Server with MCP Integration and Memory Bank - A powerful knowledge retrieval system for developers",
+  "main": "rag_server.py",
+  "scripts": {
+    "start": "python rag_server.py",
+    "mcp": "node mcp-server/enhanced-mcp-server.js",
+    "install-docs": "python update_docs.py --all",
+    "test": "python -m pytest"
+  },
+  "keywords": [
+    "rag",
+    "mcp",
+    "memory-bank",
+    "ai",
+    "knowledge-retrieval",
+    "documentation",
+    "frameworks",
+    "vector-database",
+    "llm"
+  ],
+  "author": "lexa5575",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lexa5575/RagCore.git"
+  },
+  "homepage": "https://github.com/lexa5575/RagCore",
+  "bugs": {
+    "url": "https://github.com/lexa5575/RagCore/issues"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.15.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "python": ">=3.8"
   }
 }

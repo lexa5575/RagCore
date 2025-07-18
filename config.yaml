@@ -1,214 +1,70 @@
-auto_scan:
-  auto_add_new: false
-  auto_update_existing: true
-  doc_indicators:
-  - README.md
-  - readme.md
-  - docs
-  - documentation
-  - guide
-  - .vitepress
-  - docusaurus.config.js
-  - mkdocs.yml
-  enabled: true
-  exclude_patterns:
-  - node_modules
-  - .git
-  - .venv
-  - venv
-  - __pycache__
-  - .next
-  - .nuxt
-  - dist
-  - build
-  - .cache
-  - coverage
-  min_md_files: 1
-  scan_paths:
-  - .
-cache:
-  enabled: true
-  max_size: 1000
-  ttl: 3600
+# 🚀 RAG Server Configuration
+# Simple and clean configuration file
+
+# 📚 Database settings
 database:
   collection_name: universal_docs
   path: ./chroma_storage
-embeddings:
-  model: all-MiniLM-L6-v2
-frameworks:
-  alpine:
-    chunk_settings:
-      min_size: 200
-      max_size: 2000
-      overlap: 200
-    content_cleaning:
-      remove_code_blocks: false
-      remove_frontmatter: true
-      remove_html_tags: true
-    description: Alpine.js - Your new, lightweight, JavaScript framework
-    enabled: true
-    exclude_patterns:
-    - '**/node_modules/**'
-    - '**/.git/**'
-    file_patterns:
-    - '*.md'
-    name: Alpine.js
-    path: /Users/aleksejcuprynin/PycharmProjects/chanki/alpine_docs
-    prefix: alpine
-    type: markdown
-  filament:
-    chunk_settings:
-      min_size: 200
-      max_size: 2000
-      overlap: 200
-    content_cleaning:
-      remove_code_blocks: false
-      remove_frontmatter: true
-      remove_html_tags: true
-    description: Filament - Accelerated Laravel development framework
-    enabled: true
-    exclude_patterns:
-    - '**/node_modules/**'
-    - '**/.git/**'
-    file_patterns:
-    - '*.md'
-    name: Filament
-    path: /Users/aleksejcuprynin/PycharmProjects/chanki/filament_docs
-    prefix: filament
-    type: markdown
-  inertia:
-    chunk_settings:
-      min_size: 200
-      max_size: 2000
-      overlap: 200
-    content_cleaning:
-      remove_code_blocks: false
-      remove_frontmatter: true
-      remove_html_tags: true
-    description: Inertia.js - Build single-page apps without building an API
-    enabled: true
-    exclude_patterns:
-    - '**/node_modules/**'
-    - '**/.git/**'
-    file_patterns:
-    - '*.md'
-    name: Inertia
-    path: /Users/aleksejcuprynin/PycharmProjects/chanki/inertia_docs
-    prefix: inertia
-    type: markdown
-  laravel:
-    chunk_settings:
-      min_size: 200
-      max_size: 2000
-      overlap: 200
-    content_cleaning:
-      remove_code_blocks: false
-      remove_frontmatter: true
-      remove_html_tags: true
-    description: Laravel - PHP Framework for Web Artisans
-    enabled: true
-    exclude_patterns:
-    - '**/node_modules/**'
-    - '**/.git/**'
-    file_patterns:
-    - '*.md'
-    name: Laravel
-    path: /Users/aleksejcuprynin/PycharmProjects/chanki/laravel_docs
-    prefix: laravel
-    type: markdown
-  tailwindcss:
-    chunk_settings:
-      min_size: 200
-      max_size: 2000
-      overlap: 200
-    content_cleaning:
-      remove_code_blocks: false
-      remove_frontmatter: true
-      remove_html_tags: true
-    description: Tailwind CSS - A utility-first CSS framework
-    enabled: true
-    exclude_patterns:
-    - '**/node_modules/**'
-    - '**/.git/**'
-    file_patterns:
-    - '*.md'
-    name: Tailwind CSS
-    path: /Users/aleksejcuprynin/PycharmProjects/chanki/tailwindcss_docs
-    prefix: tailwindcss
-    type: markdown
-  vue:
-    chunk_settings:
-      min_size: 200
-      max_size: 2000
-      overlap: 200
-    content_cleaning:
-      remove_code_blocks: false
-      remove_frontmatter: true
-      remove_html_tags: true
-      remove_script_tags: true
-      remove_style_tags: true
-      remove_vue_components: true
-    description: Vue.js - Progressive JavaScript Framework
-    enabled: true
-    exclude_patterns:
-    - '**/node_modules/**'
-    - '**/.git/**'
-    file_patterns:
-    - '*.md'
-    name: Vue
-    path: /Users/aleksejcuprynin/PycharmProjects/chanki/vue_docs/src
-    prefix: vue
-    type: vitepress
-ide:
-  context_window: 3
-  enabled: true
-  quick_response_timeout: 1.0
+
+# 🤖 LLM Configuration (EDIT THIS SECTION ONLY!)
 llm:
+  default_model: qwen
   models:
     qwen:
       api_url: http://127.0.0.1:1234/v1/completions
-      model_name: qwen2.5-coder-3b-instruct-mlx
-      max_tokens: 2500
-      temperature: 0.3
-    deepseek:
-      api_url: http://localhost:11434/api/generate
-      model_name: deepseek-r1:8b
-      max_tokens: 2500
-      temperature: 0.3
-  default_model: qwen  # Модель по умолчанию
-logging:
-  file: ./logs/rag_system.log
-  level: INFO
+      model_name: meta-llama-3.1-8b-instruct
+      max_tokens: 800
+      temperature: 0.2
+      stop: ["<|eot_id|>", "<|end_of_text|>", "Human:", "User:"]
+
+# 🌐 Server settings
 server:
-  cors_origins:
-  - '*'
   host: 0.0.0.0
   port: 8000
-# Настройки системы памяти
-session_memory:
-  enabled: true
-  db_path: "./session_storage.db"
-  max_messages: 200
-  compression_threshold: 50
-  auto_detect_moments: true
-  cleanup_days: 30
-  auto_save_interactions: true
 
-# Настройки MCP сервера
-mcp:
-  base_url: http://127.0.0.1:8200
-  chunk_limit_tokens: 4000
-  key_moments_limit: 10
-  tools_enabled:
-    - ask_rag
-    - get_recent_changes
-    - run_tests
-    - build_project
-    - apply_patch
-    - run_linters
-    - open_file
-    - list_frameworks
-    - list_models
-    - get_stats
-    - save_tool_call
-    - save_file_change
+# 📁 Frameworks (auto-updated by update_docs.py)
+frameworks:
+  alpine:
+    description: Alpine.js Documentation
+    enabled: true
+    name: Alpine.js
+    path: /Users/aleksejcuprynin/PycharmProjects/chanki/documentation/alpine_docs
+    type: markdown
+  filament:
+    description: Filament Documentation
+    enabled: true
+    name: Filament
+    path: /Users/aleksejcuprynin/PycharmProjects/chanki/documentation/filament_docs
+    type: markdown
+  laravel:
+    description: Laravel Documentation
+    enabled: true
+    name: Laravel
+    path: /Users/aleksejcuprynin/PycharmProjects/chanki/documentation/laravel_docs
+    type: markdown
+  tailwindcss:
+    description: Tailwind CSS Documentation
+    enabled: true
+    name: Tailwind CSS
+    path: /Users/aleksejcuprynin/PycharmProjects/chanki/documentation/tailwindcss_docs
+    type: markdown
+  vue:
+    description: Vue.js Documentation
+    enabled: true
+    name: Vue.js
+    path: /Users/aleksejcuprynin/PycharmProjects/chanki/documentation/vue_docs
+    type: markdown
+
+# 📊 Logging
+logging:
+  level: INFO
+  file: ./logs/rag_system.log
+
+# 💾 Cache settings
+cache:
+  enabled: true
+  ttl: 3600
+
+# 🔧 Embeddings
+embeddings:
+  model: all-MiniLM-L6-v2

@@ -6,6 +6,11 @@ import path from 'path';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import yaml from 'js-yaml';
+import { createRequire } from 'module';
+
+// Импорт функций автоанализа из stdio-mcp-server
+const require = createRequire(import.meta.url);
+const { handleExternalAutoAnalysis } = require('./stdio-mcp-server.js');
 
 // Загрузка конфигурации
 const configPath = path.join(path.dirname(new URL(import.meta.url).pathname), '..', 'config.yaml');
@@ -16,6 +21,34 @@ const RAG_SERVER_URL = 'http://localhost:8000';
 const MCP_PORT = 8200;
 const CHUNK_LIMIT_TOKENS = config.mcp?.chunk_limit_tokens || 4000;
 const KEY_MOMENTS_LIMIT = config.mcp?.key_moments_limit || 10;
+
+// Функция получения имени текущего проекта
+function getCurrentProjectName() {
+  const cwd = process.cwd();
+  const projectName = path.basename(cwd);
+  return projectName.replace(/[^\w\-_.]/g, '_') || 'default';
+}
+
+// Функция получения корневой папки проекта
+function getCurrentProjectRoot() {
+  return process.cwd();
+}
+
+// Функция получения или создания сессии
+async function getOrCreateSession() {
+  let sessionId;
+  try {
+    const sessionResponse = await axios.get(`${RAG_SERVER_URL}/sessions/latest?project_name=${getCurrentProjectName()}`);
+    sessionId = sessionResponse.data.session_id;
+  } catch {
+    // Создаем новую сессию если не существует
+    const createResponse = await axios.post(`${RAG_SERVER_URL}/sessions/create?project_name=${getCurrentProjectName()}`, {
+      description: "Claude Code CLI HTTP MCP сессия"
+    });
+    sessionId = createResponse.data.session_id;
+  }
+  return sessionId;
+}
 
 // Инициализация Express
 const app = express();
@@ -51,6 +84,7 @@ async function initDatabase() {
       args_json TEXT,
       result_json TEXT,
       success BOOLEAN,
+      session_id TEXT,
       ts DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
@@ -58,15 +92,26 @@ async function initDatabase() {
   console.log('✅ База данных инициализирована');
 }
 
-// Функция для логирования вызовов
-async function logToolCall(toolName, args, result, success) {
+// Функция для логирования вызовов с session_id
+async function logToolCall(toolName, args, result, success, sessionId = null) {
   try {
+    // Получаем session_id если не передан
+    if (!sessionId) {
+      try {
+        sessionId = await getOrCreateSession();
+      } catch (error) {
+        console.error('Ошибка получения session_id для логирования:', error);
+        sessionId = null;
+      }
+    }
+    
     await db.run(
-      'INSERT INTO mcp_calls (tool_name, args_json, result_json, success) VALUES (?, ?, ?, ?)',
+      'INSERT INTO mcp_calls (tool_name, args_json, result_json, success, session_id) VALUES (?, ?, ?, ?, ?)',
       toolName,
       JSON.stringify(args),
       JSON.stringify(result),
-      success ? 1 : 0
+      success ? 1 : 0,
+      sessionId
     );
   } catch (error) {
     console.error('Ошибка логирования:', error);
@@ -272,7 +317,8 @@ const toolHandlers = {
       question: args.query || args.question,
       framework: args.framework,
       model: args.model,
-      max_results: args.max_results || 5
+      max_results: args.max_results || 5,
+      project_name: getCurrentProjectName()
     });
 
     // Очищаем ответ от артефактов
@@ -287,7 +333,9 @@ const toolHandlers = {
     // Сохраняем в сессию если включено
     if (config.session_memory?.auto_save_interactions) {
       try {
+        const sessionId = await getOrCreateSession();
         await axios.post(`${RAG_SERVER_URL}/session/message`, {
+          project_name: getCurrentProjectName(),
           role: 'assistant',
           content: cleanedAnswer,
           actions: ['ask_rag'],
@@ -304,7 +352,8 @@ const toolHandlers = {
         path: s.source,
         line: s.line || 0,
         framework: s.framework
-      })) || []
+      })) || [],
+      session_id: response.data.session_id
     };
   },
 
@@ -313,11 +362,27 @@ const toolHandlers = {
     const limit = args.limit || KEY_MOMENTS_LIMIT;
     
     try {
-      const response = await axios.get(`${RAG_SERVER_URL}/session/current/context`);
-      const context = response.data;
+      const response = await axios.get(`${RAG_SERVER_URL}/sessions/latest?project_name=${getCurrentProjectName()}`);
+      const data = response.data;
+      
+      // Попробуем все возможные пути к ключевым моментам
+      let moments = null;
+      
+      if (data && data.context && data.context.key_moments && Array.isArray(data.context.key_moments)) {
+        moments = data.context.key_moments;
+      } else if (data && data.key_moments && Array.isArray(data.key_moments)) {
+        moments = data.key_moments;
+      }
+      
+      if (!moments || moments.length === 0) {
+        return {
+          changes: [],
+          error: 'Ключевые моменты не найдены'
+        };
+      }
       
       // Берем последние ключевые моменты
-      const recentMoments = context.key_moments
+      const recentMoments = moments
         .slice(0, limit)
         .map(moment => ({
           timestamp: moment.timestamp,
@@ -373,11 +438,12 @@ const toolHandlers = {
     
     // Создаем ключевой момент
     try {
-      await axios.post(`${RAG_SERVER_URL}/session/key_moment`, {
-        type: 'REFACTORING',
+      const sessionId = await getOrCreateSession();
+      await axios.post(`${RAG_SERVER_URL}/sessions/${sessionId}/key-moment`, {
+        moment_type: 'refactoring',
         title: 'Применен патч',
         summary: `Применен патч: ${diff.substring(0, 100)}...`,
-        files: args.files || [],
+        files_involved: args.files || [],
         importance: 7
       });
     } catch (error) {
@@ -504,11 +570,12 @@ const toolHandlers = {
     
     // Создаем ключевой момент для изменения файла
     try {
-      await axios.post(`${RAG_SERVER_URL}/session/key_moment`, {
-        type: 'FILE_CREATED',
+      const sessionId = await getOrCreateSession();
+      await axios.post(`${RAG_SERVER_URL}/sessions/${sessionId}/key-moment`, {
+        moment_type: 'file_created',
         title: `Изменен файл ${path.basename(file_path)}`,
         summary: `Файл ${file_path} был изменен`,
-        files: [file_path],
+        files_involved: [file_path],
         importance: 5
       });
     } catch (error) {
@@ -545,11 +612,19 @@ app.post('/tool/:name', async (req, res) => {
   }
 
   try {
+    // Получаем session_id для логирования
+    let sessionId = null;
+    try {
+      sessionId = await getOrCreateSession();
+    } catch (error) {
+      console.error('Ошибка получения session_id:', error);
+    }
+    
     // Выполняем инструмент
     const result = await handler(args);
     
     // Логируем успешный вызов
-    await logToolCall(toolName, args, result, true);
+    await logToolCall(toolName, args, result, true, sessionId);
     
     // Проверяем размер ответа
     const chunks = chunkResponse(result);
@@ -574,21 +649,78 @@ app.post('/tool/:name', async (req, res) => {
       details: error.response?.data || undefined
     };
     
+    // Получаем session_id для логирования ошибки
+    let sessionId = null;
+    try {
+      sessionId = await getOrCreateSession();
+    } catch (sessionError) {
+      console.error('Ошибка получения session_id для логирования ошибки:', sessionError);
+    }
+    
     // Логируем ошибку
-    await logToolCall(toolName, args, errorResult, false);
+    await logToolCall(toolName, args, errorResult, false, sessionId);
     
     res.status(500).json(errorResult);
   }
 });
 
+// Endpoint для внешнего автоанализа (от Claude File Watcher)
+app.post('/auto-analyze-moments', async (req, res) => {
+  try {
+    const analysisData = req.body;
+    
+    console.log(`🔍 Запрос внешнего автоанализа для: ${analysisData.files?.join(', ') || 'unknown'}`);
+    
+    // Импортируем функцию автоанализа из stdio-mcp-server
+    const result = await handleExternalAutoAnalysis(analysisData);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('❌ Ошибка внешнего автоанализа:', error);
+    res.status(500).json({
+      success: false,
+      moments_detected: 0,
+      error: error.message
+    });
+  }
+});
+
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    version: '1.0.0',
-    rag_server: RAG_SERVER_URL,
-    tools_enabled: config.mcp?.tools_enabled || []
-  });
+app.get('/health', async (req, res) => {
+  try {
+    const currentProject = getCurrentProjectName();
+    const projectRoot = getCurrentProjectRoot();
+    
+    // Попробуем получить текущую сессию
+    let sessionInfo = null;
+    try {
+      const sessionId = await getOrCreateSession();
+      sessionInfo = {
+        session_id: sessionId,
+        project_name: currentProject,
+        project_root: projectRoot
+      };
+    } catch (error) {
+      sessionInfo = {
+        error: 'Не удалось получить информацию о сессии',
+        project_name: currentProject,
+        project_root: projectRoot
+      };
+    }
+    
+    res.json({
+      status: 'ok',
+      version: '1.0.0',
+      rag_server: RAG_SERVER_URL,
+      tools_enabled: config.mcp?.tools_enabled || [],
+      session_info: sessionInfo
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message
+    });
+  }
 });
 
 // Endpoint для получения статистики вызовов
@@ -621,6 +753,9 @@ async function start() {
       console.log(`🚀 HTTP-MCP сервер запущен на http://127.0.0.1:${MCP_PORT}`);
       console.log(`📊 RAG backend: ${RAG_SERVER_URL}`);
       console.log(`🔧 Включенные инструменты: ${config.mcp?.tools_enabled?.join(', ') || 'нет'}`);
+      console.log(`🏗️ Проект: ${getCurrentProjectName()}`);
+      console.log(`📁 Корень проекта: ${getCurrentProjectRoot()}`);
+      console.log(`🔐 Session management: АКТИВЕН`);
     });
   } catch (error) {
     console.error('❌ Ошибка запуска сервера:', error);

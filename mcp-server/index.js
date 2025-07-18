@@ -327,10 +327,10 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   
-  console.error('RAG MCP сервер запущен');
+  console.error('RAG MCP server started');
 }
 
 main().catch((error) => {
-  console.error('Ошибка запуска сервера:', error);
+  console.error('Server startup error:', error);
   process.exit(1);
 });

@@ -1,3 +1,15 @@
+# =============================================================================
+# RAG SERVER PROJECT - .gitignore
+# =============================================================================
+# Этот файл исключает все персональные данные и скачанную документацию,
+# чтобы новые разработчики могли легко настроить проект под себя.
+#
+# ВАЖНО: После клонирования репозитория:
+# 1. Скопируйте config.example.yaml в config.local.yaml
+# 2. Настройте свои LLM параметры в config.local.yaml
+# 3. Запустите скрипты для скачивания документации (см. README.md)
+# =============================================================================
+
 # Python
 __pycache__/
 *.py[cod]
@@ -149,33 +161,140 @@ cython_debug/
 ehthumbs.db
 Thumbs.db
 
-# ChromaDB
+# =============================================================================
+# RAG SERVER SPECIFIC EXCLUSIONS
+# =============================================================================
+
+# ChromaDB - персональная векторная база данных
+# Каждый разработчик создает свою базу при первом запуске
 chroma_storage/
 
-# Logs
+# Логи - временные файлы
 logs/
 *.log
 
-# Node modules (if any)
+# Персональные конфигурации LLM
+# Используйте config.example.yaml как шаблон для создания config.local.yaml
+config.local.yaml
+*.local.yaml
+*.personal.yaml
+*.private.yaml
+
+# Claude AI настройки (если используется)
+.claude/
+CLAUDE.md
+*.claude.*
+AI_*.md
+
+# Node modules (для MCP сервера)
 node_modules/
 
-# Temporary files
+# =============================================================================
+# ДОКУМЕНТАЦИЯ ФРЕЙМВОРКОВ - ИСКЛЮЧАЕТСЯ ПОЛНОСТЬЮ
+# =============================================================================
+# Эти папки содержат скачанную документацию фреймворков.
+# У каждого разработчика будет своя версия документации.
+# 
+# Для скачивания документации используйте:
+# - python update_docs.py --framework vue
+# - python update_docs.py --framework laravel
+# - python update_docs.py --framework filament
+# - python update_docs.py --framework alpine
+# - python update_docs.py --framework tailwindcss
+# - python update_docs.py --all  # для всех фреймворков
+
+documentation/alpine_docs/
+documentation/filament_docs/
+documentation/laravel_docs/
+documentation/tailwindcss_docs/
+documentation/vue_docs/
+
+# Сохраняем структуру папки documentation, но исключаем содержимое
+!documentation/
+!documentation/.gitkeep
+!documentation/README.md
+
+# =============================================================================
+# MEMORY BANK - ПЕРСОНАЛЬНЫЕ ЗАМЕТКИ И КОНТЕКСТ
+# =============================================================================
+# Memory Bank содержит персональные заметки, контекст проекта и историю работы.
+# Каждый разработчик должен создать свой Memory Bank.
+
+memory-bank/*
+mcp-server/memory-bank/*
+
+# Сохраняем структуру, но исключаем персональные данные
+!memory-bank/.gitkeep
+!memory-bank/README.md
+!mcp-server/memory-bank/.gitkeep
+
+# =============================================================================
+# ВРЕМЕННЫЕ И ТЕСТОВЫЕ ФАЙЛЫ
+# =============================================================================
+
+# Временные файлы
 *.tmp
 *.temp
+*.bak
+*.backup
 
-# Large documentation folders (can be re-downloaded)
-*_docs/*/node_modules/
-*_docs/*/dist/
-*_docs/*/build/
-*_docs/*/coverage/
-*_docs/*/.next/
-*_docs/*/.nuxt/
-*_docs/*/.cache/
+# Тестовые файлы (создаются автоматически при разработке)
+test-*.txt
+test-*.js
+test-*.py
+test-*.md
+*-test.*
+*.test.*
 
-# Keep structure but ignore content of large folders
-alpine_docs/
-filament_docs/
-inertia_docs/
-laravel_docs/
-tailwindcss_docs/
-vue_docs/
+# Файлы отладки
+debug-*.log
+debug-*.txt
+*.debug
+
+# =============================================================================
+# ДОПОЛНИТЕЛЬНЫЕ ИСКЛЮЧЕНИЯ ДЛЯ РАЗРАБОТКИ
+# =============================================================================
+
+# Персональные скрипты разработчика
+personal/
+private/
+local/
+
+# Экспериментальные файлы
+experiments/
+playground/
+sandbox/
+
+# Резервные копии
+*.orig
+*~
+
+# Файлы редакторов
+*.sublime-project
+*.sublime-workspace
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+
+# Системные файлы Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Системные файлы Linux
+*~
+.directory
+.Trash-*
+
+# =============================================================================
+# ВАЖНЫЕ ФАЙЛЫ - НЕ ИСКЛЮЧАТЬ
+# =============================================================================
+# Эти файлы должны быть в репозитории:
+# - config.example.yaml (шаблон конфигурации)
+# - config.yaml (базовая конфигурация)
+# - requirements.txt (зависимости Python)
+# - package.json (зависимости Node.js для MCP сервера)
+# - README.md (документация проекта)
+# - install.sh (скрипт установки)
+# - update_docs.py (скрипт обновления документации)
+# =============================================================================
