@@ -1,33 +1,26 @@
-# 🚀 RAG Server + Memory Bank Integration
-## Intelligent Documentation Assistant with Project Memory
+🚀 RAG Server + Memory Bank Integration
+Intelligent Documentation Assistant with Project Memory
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![Node.js 16+](https://img.shields.io/badge/node-16+-green.svg)](https://nodejs.org/)
 
-> **A comprehensive RAG (Retrieval-Augmented Generation) system with intelligent project memory management for AI assistants like Claude and Cline.**
+A comprehensive RAG (Retrieval-Augmented Generation) system with intelligent project memory management for AI assistants like Claude and Cline.
 
-### 🌍 Languages / Языки
-- [🇺🇸 English Documentation](#english-documentation)
-- [🇷🇺 Русская документация](#русская-документация)
+🌍 Languages / Языки
 
----
+🇺🇸 English Documentation
+🇷🇺 Русская документация
 
-## ENGLISH DOCUMENTATION
 
-### 🎯 What is this?
+ENGLISH DOCUMENTATION
+🎯 What is this?
+This project combines a powerful RAG (Retrieval-Augmented Generation) server with an intelligent Memory Bank system to create a versatile development assistant. It provides:
 
-This project combines a powerful **RAG (Retrieval-Augmented Generation) server** with an intelligent **Memory Bank system** to create the ultimate development assistant. It provides:
+📚 Smart Documentation Search - Query documentation for any technology or framework you are working with
+🧠 Project Memory - Automatically tracks project context, tasks, and development history
+👁️ File Monitoring - Real-time tracking of code changes and key development moments
+🔗 Unified Interface - Single MCP server integrating all components
+🤖 Local LLM Support - Uses meta-llama-3.1-8b-instruct for intelligent responses
 
-- **📚 Smart Documentation Search** - Query documentation for any framework or technology (React, Vue.js, Laravel, Django, Angular, Next.js, and many more)
-- **🧠 Project Memory** - Automatically tracks project context, tasks, and development history
-- **👁️ File Monitoring** - Real-time tracking of code changes and key development moments
-- **🔗 Unified Interface** - Single MCP server integrating all components
-- **🤖 Local LLM Support** - Uses meta-llama-3.1-8b-instruct for intelligent responses
-
-### 🏗️ System Architecture
-
-```
+🏗️ System Architecture
 ┌─────────────────────────────────────────────────────────────┐
 │                    Claude / Cline                          │
 │                 (AI Assistant)                             │
@@ -50,396 +43,208 @@ This project combines a powerful **RAG (Retrieval-Augmented Generation) server**
 │    ChromaDB     │ │    MD Files     │ │     Events      │
 │  (Vector Store) │ │ (Project Docs)  │ │  (File Changes) │
 └─────────────────┘ └─────────────────┘ └─────────────────┘
-```
 
-### 📦 Installation
+📦 Installation
+Prerequisites
 
-#### Prerequisites
-- **Python 3.8+** with pip
-- **Node.js 16+** with npm
-- **Local LLM Server** (LM Studio, Ollama, or similar)
-- **Claude Desktop** or **VS Code with Cline extension**
+Python 3.8+ with pip
+Node.js 16+ with npm
+Local LLM Server (LM Studio, Ollama, or similar)
+Claude Desktop or VS Code with Cline extension
 
-#### Step 1: Clone and Setup Python Environment
-```bash
+Step 1: Clone and Setup Python Environment
 git clone https://github.com/lexa5575/rag_server.git
 cd rag_server
 
 # Install Python dependencies
 pip install -r requirements.txt
-```
 
-#### Step 2: Setup Node.js Dependencies
-```bash
+Step 2: Setup Node.js Dependencies
 cd mcp-server
 npm install
 cd ..
-```
 
-#### Step 3: Configure Local LLM
-1. **Install LM Studio** or **Ollama**
-2. **Download meta-llama-3.1-8b-instruct model**
-3. **Start local server** on `http://127.0.0.1:1234` (LM Studio) or `http://localhost:11434` (Ollama)
+Step 3: Configure Local LLM
 
-#### Step 4: Universal Framework Support
-```bash
-# The system supports ANY framework or technology out of the box:
-# - Frontend: React, Vue.js, Angular, Svelte, Next.js, Nuxt.js
-# - Backend: Laravel, Django, FastAPI, Spring Boot, .NET Core, Express.js
-# - Mobile: React Native, Flutter, Ionic
-# - CSS: Tailwind CSS, Bootstrap, Material-UI, Chakra UI
-# - And ANY other technology with documentation!
+Install LM Studio or Ollama
+Download meta-llama-3.1-8b-instruct model
+Start local server on http://127.0.0.1:1234 (LM Studio) or http://localhost:11434 (Ollama)
 
-# Documentation paths are automatically configured in config.yaml
-```
+Step 4: Add Documentation to documentation/ Folder
+Add any documentation you want to search through to the documentation/ folder. The system will automatically detect the technology based on the folder name you choose. For example:
 
-#### Step 5: Add Documentation to documentation/ folder
-```bash
-# Simply copy or clone documentation into documentation/ folder
-# Examples:
-git clone https://github.com/vuejs/docs.git documentation/vue_docs
-git clone https://github.com/laravel/docs.git documentation/laravel_docs
-cp -r /path/to/react_docs documentation/react_docs
+documentation/python_docs/ for Python documentation
+documentation/java_docs/ for Java documentation
+documentation/custom_project_docs/ for your own project's documentation
 
-# The system will automatically detect framework types by folder names:
-# vue_docs → Vue.js, laravel_docs → Laravel, react_docs → React, etc.
-```
-
-### 🚀 Quick Start
-
-#### 1. Run Installation Script
-```bash
+You can clone repositories or copy local files into this folder.
+🚀 Quick Start
+1. Run Installation Script
 ./install.sh
-```
-*This will install all dependencies and check your system*
 
-#### 2. Configure Your Local LLM (One-time setup)
-**The project uses universal relative paths - no manual path configuration needed!**
-
-Simply edit the LLM section in `config.yaml`:
-
-```bash
-# Edit your LLM configuration
-nano config.yaml
-```
-
-**For LM Studio users (recommended):**
-- Keep default settings in `config.yaml`
-- Just change `model_name` to your loaded model name
-- Ensure LM Studio server is running on port 1234
-
-**For Ollama users:**
-```yaml
-llm:
-  default_model: ollama
-  models:
-    ollama:
-      api_url: http://localhost:11434/api/generate
-      model_name: llama3.1:8b  # Your Ollama model
-```
-
-**For other LLM services:**
-- Edit the appropriate section in `config.yaml`
-- All paths are automatically relative - works on any system!
-
-**✅ Universal Setup:** The project now uses relative paths - works on Windows, macOS, and Linux without any path modifications!
-
-#### 3. 📁 Add Documentation to `documentation/` Folder
-
-**IMPORTANT: All documentation must be placed in the `documentation/` folder!**
-
-```bash
-# Create documentation folder if it doesn't exist
-mkdir -p documentation
-
-# Copy your documentation folders to documentation/ directory
-# Examples for ANY technology:
-cp -r /path/to/react_docs documentation/
-cp -r /path/to/angular_docs documentation/
-cp -r /path/to/django_docs documentation/
-cp -r /path/to/fastapi_docs documentation/
-cp -r /path/to/nextjs_docs documentation/
-cp -r /path/to/spring_docs documentation/
-
-# Or clone directly into documentation/ folder:
-git clone https://github.com/facebook/react.git documentation/react_docs
-git clone https://github.com/angular/angular.git documentation/angular_docs
-git clone https://github.com/django/django.git documentation/django_docs
-git clone https://github.com/tiangolo/fastapi.git documentation/fastapi_docs
-git clone https://github.com/vercel/next.js.git documentation/nextjs_docs
-git clone https://github.com/vuejs/docs.git documentation/vue_docs
-```
-
-**📋 Folder naming examples:**
-- `documentation/vue_docs/` → Vue.js framework
-- `documentation/laravel_docs/` → Laravel framework  
-- `documentation/react_docs/` → React framework
-- `documentation/tailwindcss_docs/` → Tailwind CSS framework
-
-#### 4. 🚀 Run Automatic Documentation Sync
-
-**THE MAIN COMMAND:**
-```bash
+This will install all dependencies and check your system
+2. Configure Your Local LLM (One-time setup)
+Edit config.local.yaml to set up your local LLM.
+3. Add Documentation to documentation/ Folder
+Follow the instructions in Step 4 above.
+4. Run Automatic Documentation Sync
 python3 update_docs.py
-```
 
-**Preview command (recommended first):**
-```bash
-python3 update_docs.py --scan
-```
-
-*The system will automatically:*
-- *Scan `documentation/` folder for framework documentation*
-- *Detect framework types by folder names (vue_docs → Vue.js, laravel_docs → Laravel)*
-- *Convert HTML to Markdown if needed*
-- *Update config.yaml with new frameworks*
-- *Index everything into the RAG database*
-
-#### 5. Start the RAG Server
-```bash
+5. Start the RAG Server
 python3 rag_server.py
-```
-*Server will start on http://localhost:8000*
 
-#### 6. Start the Enhanced MCP Server
-```bash
+6. Start the Enhanced MCP Server
 cd mcp-server
 npm run start:enhanced
-```
 
-#### 7. Configure MCP in Your AI Assistant
-
-**For Claude Desktop:**
-Add to `claude_desktop_config.json`:
-```json
-{
-  "mcpServers": {
-    "enhanced-rag-memory-bank": {
-      "command": "node",
-      "args": ["/path/to/rag_server/mcp-server/enhanced-mcp-server.js"],
-      "env": {
-        "RAG_SERVER_URL": "http://localhost:8000"
-      }
-    }
-  }
-}
-```
-
-**For VS Code Cline:**
-Add to `.mcp.json` in your project:
-```json
-{
-  "mcpServers": {
-    "enhanced-rag-memory-bank": {
-      "command": "node",
-      "args": ["mcp-server/enhanced-mcp-server.js"],
-      "env": {
-        "RAG_SERVER_URL": "http://localhost:8000"
-      }
-    }
-  }
-}
-```
-
-#### 8. Test the System
+7. Configure MCP in Your AI Assistant
+Follow the instructions for Claude Desktop or VS Code Cline.
+8. Test the System
 In Claude or Cline, try these commands:
-```
-Use get_rag_stats to check the system status
-Use ask_rag with question "How to create a component in Vue.js?" and framework "vue"
-Use memory_bank_status to check project memory (auto-initializes if needed)
-Use file_watcher_start to begin tracking changes
-```
+get_rag_stats
+ask_rag "How to create a class in Python?" "python"
+memory_bank_status
+file_watcher_start
 
-**🎯 Smart Auto-Initialization:** Memory Bank now automatically initializes when you first use any memory_bank_* function. No manual setup required!
+🎯 Simple Documentation Manager
+The project includes a Simple Documentation Manager (update_docs.py) that automates the documentation workflow with one command.
+🚀 Key Features:
 
-### 🎯 Simple Documentation Manager
+📁 Folder-Based Discovery: Automatically scans documentation/ folder for technology documentation
+🏷️ Smart Naming: Determines technology types by folder names (e.g., python_docs → Python)
+🔄 HTML Conversion: Converts HTML documentation to Markdown if needed
+📝 Config Updates: Automatically updates config.yaml with new technologies
+📚 Full Indexing: Indexes everything into the RAG database
+⚡ One-Command Setup: Single command handles everything automatically
 
-The project includes a **Simple Documentation Manager** (`update_docs.py`) that completely automates the documentation workflow with one command:
+📋 Simple Command Reference:
+python3 update_docs.py  # Full automatic synchronization
+python3 update_docs.py --scan  # Preview what will be processed
+python3 update_docs.py --verbose  # Verbose output for debugging
 
-#### 🚀 Key Features:
-- **📁 Folder-Based Discovery**: Automatically scans `documentation/` folder for framework documentation
-- **🏷️ Smart Naming**: Determines framework types by folder names (vue_docs → Vue.js, laravel_docs → Laravel)
-- **🔄 HTML Conversion**: Converts HTML documentation to Markdown when needed
-- **📝 Config Updates**: Automatically updates config.yaml with new frameworks
-- **📚 Full Indexing**: Indexes everything into the RAG database
-- **⚡ One-Command Setup**: Single command handles everything automatically
+🎯 Perfect Workflow for New Technologies:
 
-#### 📋 Simple Command Reference:
-```bash
-# 🔄 Full automatic synchronization - THE MAIN COMMAND
-python3 update_docs.py
+📁 Add documentation to documentation/ folder:# Examples:
+git clone https://github.com/python/cpython.git documentation/python_docs
+cp -r /path/to/java_docs documentation/java_docs
 
-# 👀 Preview what will be processed (without indexing)
-python3 update_docs.py --scan
 
-# 📝 Verbose output for debugging
-python3 update_docs.py --verbose
-```
+🔄 Run automatic sync: python3 update_docs.py
+✅ Done! Technology is automatically detected, converted, and indexed
 
-#### 🎯 Perfect Workflow for New Frameworks:
-1. **📁 Add documentation** to `documentation/` folder:
-   ```bash
-   # Examples:
-   git clone https://github.com/vuejs/docs.git documentation/vue_docs
-   cp -r /path/to/react_docs documentation/react_docs
-   ```
-2. **🔄 Run automatic sync**: `python3 update_docs.py`
-3. **✅ Done!** Framework is automatically detected, converted, and indexed
+🏷️ Technology Detection by Folder Names:
+The system automatically recognizes technologies by folder names:
 
-#### 🏷️ Framework Detection by Folder Names:
-The system automatically recognizes frameworks by folder names:
-- **vue_docs** → Vue.js
-- **laravel_docs** → Laravel  
-- **react_docs** → React
-- **tailwindcss_docs** → Tailwind CSS
-- **alpine_docs** → Alpine.js
-- **filament_docs** → Filament
-- **angular_docs** → Angular
-- **svelte_docs** → Svelte
-- **And any other** → Uses folder name as framework name
+python_docs → Python
+java_docs → Java
+custom_project_docs → Custom Project
+And any other → Uses folder name as technology name
 
-#### 📊 What Happens During Sync:
-1. **🔍 Scan Phase**: Scans `documentation/` folder for framework folders
-2. **🏷️ Detection Phase**: Determines framework names from folder names
-3. **🔄 Conversion Phase**: Converts HTML to Markdown if needed
-4. **📝 Config Phase**: Updates `config.yaml` with new frameworks
-5. **📚 Indexing Phase**: Indexes all documentation into RAG database
-6. **📊 Report Phase**: Shows detailed results and statistics
+🛠️ Available MCP Tools
+RAG Tools
 
-#### 💡 Pro Tips:
-- Always run `--scan` first to see what will be processed
-- Use consistent folder naming: `framework_docs` or `framework-docs`
-- The system handles both HTML and Markdown documentation automatically
-- Place all documentation in the `documentation/` folder for automatic detection
-- No manual configuration needed - everything is automatic!
+ask_rag - Query documentation for any technology
 
-### 🛠️ Available MCP Tools
+question: Your question (string)
+framework: Target technology (e.g., "python", "java", "my_project")
+model: LLM model (qwen, deepseek) - optional
+max_results: Number of results (1-20) - optional
 
-#### RAG Tools
-- **`ask_rag`** - Query framework documentation
-  - `question`: Your question (string)
-  - `framework`: Target framework (vue, laravel, filament, alpine, tailwindcss)
-  - `model`: LLM model (qwen, deepseek) - optional
-  - `max_results`: Number of results (1-20) - optional
 
-- **`list_frameworks`** - Get available frameworks
-- **`get_rag_stats`** - Database statistics
-- **`list_models`** - Available LLM models
+list_frameworks - Get available technologies
 
-#### Memory Bank Tools
-- **`memory_bank_init`** - Initialize project memory
-- **`memory_bank_status`** - Check memory bank status
-- **`memory_bank_read`** - Read memory bank file
-  - `filename`: File to read (tasks.md, progress.md, etc.)
-- **`memory_bank_write`** - Write to memory bank
-  - `filename`: Target file
-  - `content`: File content
-- **`memory_bank_search`** - Search project history
-  - `query`: Search terms
-- **`memory_bank_archive`** - Archive completed task
-  - `taskId`: Task identifier
-  - `summary`: Task summary
-  - `completedWork`: Work description
-  - `keyDecisions`: Important decisions
-  - `lessonsLearned`: Lessons learned
+get_rag_stats - Database statistics
 
-#### File Watcher Tools
-- **`file_watcher_start`** - Start monitoring files
-- **`file_watcher_stop`** - Stop monitoring
-- **`file_watcher_stats`** - Get monitoring statistics
+list_models - Available LLM models
 
-### 💡 Usage Examples
 
-#### React Development
-```
-# Get React-specific help
-ask_rag("How to use React hooks effectively?", "react")
+Memory Bank Tools
+
+memory_bank_init - Initialize project memory
+memory_bank_status - Check memory bank status
+memory_bank_read - Read memory bank file
+filename: File to read (tasks.md, progress.md, etc.)
+
+
+memory_bank_write - Write to memory bank
+filename: Target file
+content: File content
+
+
+memory_bank_search - Search project history
+query: Search terms
+
+
+memory_bank_archive - Archive completed task
+taskId: Task identifier
+summary: Task summary
+completedWork: Work description
+keyDecisions: Important decisions
+lessonsLearned: Lessons learned
+
+
+
+File Watcher Tools
+
+file_watcher_start - Start monitoring files
+file_watcher_stop - Stop monitoring
+file_watcher_stats - Get monitoring statistics
+
+💡 Usage Examples
+Below are some examples of how to use the system with different technologies. Note that the system is not limited to these technologies; you can use it with any documentation you add to the documentation/ folder.
+Python Development
+# Get Python-specific help
+ask_rag("How to create a class in Python?", "python")
 
 # Track your work
-memory_bank_write("activeContext.md", "Building React components with hooks")
+memory_bank_write("activeContext.md", "Building Python scripts with OOP")
 
 # Start monitoring changes
 file_watcher_start()
 
 # Search project history
-memory_bank_search("hooks")
-```
+memory_bank_search("classes")
 
-#### Django API Development
-```
-# Learn about Django REST framework
-ask_rag("How to create serializers in Django REST?", "django")
+Java API Development
+# Learn about Java API
+ask_rag("How to use Java streams?", "java")
 
 # Update project progress
-memory_bank_write("progress.md", "## Current Task\nImplementing REST API with Django")
+memory_bank_write("progress.md", "## Current Task\nImplementing Java streams for data processing")
 
 # Archive completed feature
-memory_bank_archive("django-api", {
-  "summary": "Implemented REST API endpoints",
-  "completedWork": "Created serializers and viewsets",
-  "keyDecisions": "Used Django REST framework for API consistency"
+memory_bank_archive("java-streams", {
+  "summary": "Implemented stream processing",
+  "completedWork": "Created stream operations for data filtering",
+  "keyDecisions": "Used Java 8 streams for better performance"
 })
-```
 
-#### Angular Development
-```
-# Get Angular guidance
-ask_rag("How to implement reactive forms in Angular?", "angular")
+Custom Project Development
+# Get help for your custom project
+ask_rag("How to implement feature X in my project?", "my_project")
 
-# Track frontend development
-memory_bank_write("techContext.md", "Building Angular SPA with reactive forms")
-```
+# Track project development
+memory_bank_write("techContext.md", "Building custom feature with specific requirements")
 
-#### FastAPI Backend
-```
-# Learn FastAPI patterns
-ask_rag("How to implement dependency injection in FastAPI?", "fastapi")
-
-# Document API development
-memory_bank_write("progress.md", "## API Development\nImplementing FastAPI with async endpoints")
-```
-
-#### Next.js Full-Stack
-```
-# Get Next.js help
-ask_rag("How to implement SSR in Next.js 14?", "nextjs")
-
-# Track full-stack development
-memory_bank_write("activeContext.md", "Building Next.js app with SSR and API routes")
-```
-
-### 🔧 Configuration
-
-#### config.yaml Structure
-```yaml
-# LLM Configuration
-llm:
-  models:
-    qwen:
-      api_url: http://127.0.0.1:1234/v1/completions
-      model_name: meta-llama-3.1-8b-instruct
-      max_tokens: 800
-      temperature: 0.2
-
-# Framework Paths
+🔧 Configuration
+config.yaml Structure
 frameworks:
-  laravel:
+  # Add your technologies here
+  python:
     enabled: true
-    path: /path/to/laravel_docs
-    description: Laravel - PHP Framework for Web Artisans
-  vue:
+    path: /path/to/python_docs
+    description: Python Programming Language
+  java:
     enabled: true
-    path: /path/to/vue_docs
-    description: Vue.js - Progressive JavaScript Framework
+    path: /path/to/java_docs
+    description: Java Programming Language
+  # Example for a custom project
+  my_project:
+    enabled: true
+    path: /path/to/my_project_docs
+    description: My Custom Project Documentation
 
-# Database Settings
-database:
-  collection_name: universal_docs
-  path: ./chroma_storage
-```
-
-#### Memory Bank File Structure
-```
+Memory Bank File Structure
 memory-bank/
 ├── tasks.md              # Current tasks
 ├── activeContext.md      # Current context
@@ -452,12 +257,9 @@ memory-bank/
 ├── creative/             # Design decisions
 ├── reflection/           # Task reflections
 └── archive/              # Completed tasks
-```
 
-### 🚨 Troubleshooting
-
-#### RAG Server Issues
-```bash
+🚨 Troubleshooting
+RAG Server Issues
 # Check if server is running
 curl http://localhost:8000/stats
 
@@ -466,10 +268,8 @@ python3 rag_server.py
 
 # Check logs
 tail -f logs/rag_system.log
-```
 
-#### MCP Server Issues
-```bash
+MCP Server Issues
 # Test MCP server
 cd mcp-server
 npm run test:memory-bank
@@ -479,10 +279,8 @@ npm run start:enhanced
 
 # Check Node.js version
 node --version  # Should be 16+
-```
 
-#### Memory Bank Issues
-```bash
+Memory Bank Issues
 # Check memory bank status in Claude/Cline
 memory_bank_status()
 
@@ -491,48 +289,41 @@ memory_bank_init()
 
 # Check file permissions
 ls -la memory-bank/
-```
 
-#### Local LLM Issues
-- **LM Studio**: Ensure server is running on port 1234
-- **Ollama**: Check `ollama serve` is active
-- **Model**: Verify meta-llama-3.1-8b-instruct is loaded
-- **API**: Test with `curl http://127.0.0.1:1234/v1/models`
+Local LLM Issues
 
-### 📊 System Monitoring
+LM Studio: Ensure server is running on port 1234
+Ollama: Check ollama serve is active
+Model: Verify meta-llama-3.1-8b-instruct is loaded
+API: Test with curl http://127.0.0.1:1234/v1/models
 
-#### Check System Health
-```
+📊 System Monitoring
+Check System Health
 # In Claude/Cline
 get_rag_stats()           # RAG database status
 memory_bank_status()      # Memory bank status  
 file_watcher_stats()      # File monitoring status
-list_frameworks()         # Available frameworks
-```
+list_frameworks()         # Available technologies
 
-#### Performance Metrics
-- **RAG Database**: ~10,000+ indexed documents
-- **Response Time**: <2 seconds for most queries
-- **Memory Usage**: ~500MB for full system
-- **File Monitoring**: Real-time change detection
+Performance Metrics
 
----
+RAG Database: ~10,000+ indexed documents
+Response Time: <2 seconds for most queries
+Memory Usage: ~500MB for full system
+File Monitoring: Real-time change detection
 
-## РУССКАЯ ДОКУМЕНТАЦИЯ
 
-### 🎯 Что это такое?
+РУССКАЯ ДОКУМЕНТАЦИЯ
+🎯 Что это такое?
+Этот проект объединяет мощный RAG (Retrieval-Augmented Generation) сервер с интеллектуальной системой Memory Bank для создания универсального помощника разработчика. Система предоставляет:
 
-Этот проект объединяет мощный **RAG (Retrieval-Augmented Generation) сервер** с интеллектуальной системой **Memory Bank** для создания идеального помощника разработчика. Система предоставляет:
+📚 Умный поиск по документации - Запросы к документации любых технологий и фреймворков, с которыми вы работаете
+🧠 Память проекта - Автоматическое отслеживание контекста проекта, задач и истории разработки
+assoc 👁️ Мониторинг файлов - Отслеживание изменений кода и ключевых моментов разработки в реальном времени
+🔗 Единый интерфейс - Один MCP сервер, объединяющий все компоненты
+🤖 Поддержка локальной LLM - Использует meta-llama-3.1-8b-instruct для интеллектуальных ответов
 
-- **📚 Умный поиск по документации** - Запросы к документации любых фреймворков и технологий (React, Vue.js, Laravel, Django, Angular, Next.js и многих других)
-- **🧠 Память проекта** - Автоматическое отслеживание контекста проекта, задач и истории разработки
-- **👁️ Мониторинг файлов** - Отслеживание изменений кода и ключевых моментов разработки в реальном времени
-- **🔗 Единый интерфейс** - Один MCP сервер, объединяющий все компоненты
-- **🤖 Поддержка локальной LLM** - Использует meta-llama-3.1-8b-instruct для интеллектуальных ответов
-
-### 🏗️ Архитектура системы
-
-```
+🏗️ Архитектура системы
 ┌─────────────────────────────────────────────────────────────┐
 │                    Claude / Cline                          │
 │                 (ИИ Ассистент)                             │
@@ -555,369 +346,208 @@ list_frameworks()         # Available frameworks
 │    ChromaDB     │ │   MD Файлы      │ │    События      │
 │(Векторное хран.)│ │ (Документы проекта)│ │(Изменения файлов)│
 └─────────────────┘ └─────────────────┘ └─────────────────┘
-```
 
-### 📦 Установка
+📦 Установка
+Требования
 
-#### Требования
-- **Python 3.8+** с pip
-- **Node.js 16+** с npm
-- **Локальный LLM сервер** (LM Studio, Ollama или аналогичный)
-- **Claude Desktop** или **VS Code с расширением Cline**
+Python 3.8+ с pip
+Node.js 16+ с npm
+Локальный LLM сервер (LM Studio, Ollama или аналогичный)
+Claude Desktop или VS Code с расширением Cline
 
-#### Шаг 1: Клонирование и настройка Python окружения
-```bash
+Шаг 1: Клонирование и настройка Python окружения
 git clone https://github.com/lexa5575/rag_server.git
 cd rag_server
 
 # Установка Python зависимостей
 pip install -r requirements.txt
-```
 
-#### Шаг 2: Настройка Node.js зависимостей
-```bash
+Шаг 2: Настройка Node.js зависимостей
 cd mcp-server
 npm install
 cd ..
-```
 
-#### Шаг 3: Настройка локальной LLM
-1. **Установите LM Studio** или **Ollama**
-2. **Скачайте модель meta-llama-3.1-8b-instruct**
-3. **Запустите локальный сервер** на `http://127.0.0.1:1234` (LM Studio) или `http://localhost:11434` (Ollama)
+Шаг 3: Настройка локальной LLM
 
-#### Шаг 4: Настройка документации фреймворков
-```bash
-# Система поддерживает эти фреймворки из коробки:
-# - Laravel (laravel_docs/)
-# - Vue.js (vue_docs/)  
-# - Filament (filament_docs/)
-# - Alpine.js (alpine_docs/)
-# - Tailwind CSS (tailwindcss_docs/)
+Установите LM Studio или Ollama
+Скачайте модель meta-llama-3.1-8b-instruct
+Запустите локальный сервер на http://127.0.0.1:1234 (LM Studio) или http://localhost:11434 (Ollama)
 
-# Пути к документации настраиваются в config.yaml
-```
+Шаг 4: Добавление документации в папку documentation/
+Добавьте любую документацию, которую вы хотите использовать, в папку documentation/. Система автоматически определит технологию по имени папки. Например:
 
-#### Шаг 5: Добавление документации в папку documentation/
-```bash
-# Просто скопируйте или клонируйте документацию в папку documentation/
-# Примеры:
-git clone https://github.com/vuejs/docs.git documentation/vue_docs
-git clone https://github.com/laravel/docs.git documentation/laravel_docs
-cp -r /путь/к/react_docs documentation/react_docs
+documentation/python_docs/ для документации Python
+documentation/java_docs/ для документации Java
+documentation/custom_project_docs/ для документации вашего собственного проекта
 
-# Система автоматически определит типы фреймворков по именам папок:
-# vue_docs → Vue.js, laravel_docs → Laravel, react_docs → React, и т.д.
-```
-
-### 🚀 Быстрый старт
-
-#### 1. Запуск скрипта установки
-```bash
+Вы можете клонировать репозитории или скопировать локальные файлы в эту папку.
+🚀 Быстрый старт
+1. Запуск скрипта установки
 ./install.sh
-```
-*Это установит все зависимости и проверит вашу систему*
 
-#### 2. Настройка локальной LLM (одноразовая настройка)
-Система автоматически создаёт `config.local.yaml` во время установки. **Вы должны настроить его один раз для вашей LLM:**
-
-```bash
-# Отредактируйте локальную конфигурацию LLM
-nano config.local.yaml
-```
-
-**Для пользователей LM Studio (рекомендуется):**
-- Оставьте стандартные настройки в `config.local.yaml`
-- Просто измените `model_name` на название вашей загруженной модели
-- Убедитесь, что сервер LM Studio запущен на порту 1234
-
-**Для пользователей Ollama:**
-```yaml
-llm:
-  default_model: ollama
-  models:
-    ollama:
-      api_url: http://localhost:11434/api/generate
-      model_name: llama3.1:8b  # Ваша модель Ollama
-```
-
-**Для других LLM сервисов:**
-- Отредактируйте соответствующую секцию в `config.local.yaml`
-- Смотрите примеры для OpenAI API, DeepSeek и кастомных моделей
-
-**⚠️ Важно:** Это **одноразовая настройка**. После настройки вашей LLM, вам больше никогда не придётся это трогать!
-
-#### 3. 📁 Добавьте документацию в папку `documentation/`
-
-**ВАЖНО: Вся документация должна быть размещена в папке `documentation/`!**
-
-```bash
-# Создайте папку documentation если её нет
-mkdir -p documentation
-
-# Скопируйте папки с документацией в папку documentation/
-# Примеры:
-cp -r /путь/к/laravel_docs documentation/
-cp -r /путь/к/vue_docs documentation/
-cp -r /путь/к/react_docs documentation/
-cp -r /путь/к/django_docs documentation/
-
-# Или клонируйте напрямую в папку documentation/:
-git clone https://github.com/vuejs/docs.git documentation/vue_docs
-git clone https://github.com/laravel/docs.git documentation/laravel_docs
-git clone https://github.com/filamentphp/filament.git documentation/filament_docs
-```
-
-**📋 Примеры именования папок:**
-- `documentation/vue_docs/` → фреймворк Vue.js
-- `documentation/laravel_docs/` → фреймворк Laravel  
-- `documentation/react_docs/` → фреймворк React
-- `documentation/tailwindcss_docs/` → фреймворк Tailwind CSS
-
-#### 4. 🚀 Запустите автоматическую синхронизацию документации
-
-**ОСНОВНАЯ КОМАНДА:**
-```bash
+Это установит все зависимости и проверит вашу систему
+2. Настройка локальной LLM (одноразовая настройка)
+Отредактируйте config.local.yaml, чтобы настроить вашу локальную LLM.
+3. Добавьте документацию в папку documentation/
+Следуйте инструкциям в Шаге 4 выше.
+4. Запустите автоматическую синхронизацию документации
 python3 update_docs.py
-```
 
-**Команда предварительного просмотра (рекомендуется сначала):**
-```bash
-python3 update_docs.py --scan
-```
-
-*Система автоматически:*
-- *Просканирует папку `documentation/` на наличие документации фреймворков*
-- *Определит типы фреймворков по именам папок (vue_docs → Vue.js, laravel_docs → Laravel)*
-- *Конвертирует HTML в Markdown если нужно*
-- *Обновит config.yaml с новыми фреймворками*
-- *Проиндексирует всё в RAG базу данных*
-
-#### 5. Запуск RAG сервера
-```bash
+5. Запуск RAG сервера
 python3 rag_server.py
-```
-*Сервер запустится на http://localhost:8000*
 
-#### 6. Запуск расширенного MCP сервера
-```bash
+6. Запуск расширенного MCP сервера
 cd mcp-server
 npm run start:enhanced
-```
 
-#### 7. Настройка MCP в вашем ИИ ассистенте
-
-**Для Claude Desktop:**
-Добавьте в `claude_desktop_config.json`:
-```json
-{
-  "mcpServers": {
-    "enhanced-rag-memory-bank": {
-      "command": "node",
-      "args": ["/путь/к/rag_server/mcp-server/enhanced-mcp-server.js"],
-      "env": {
-        "RAG_SERVER_URL": "http://localhost:8000"
-      }
-    }
-  }
-}
-```
-
-**Для VS Code Cline:**
-Добавьте в `.mcp.json` в вашем проекте:
-```json
-{
-  "mcpServers": {
-    "enhanced-rag-memory-bank": {
-      "command": "node",
-      "args": ["mcp-server/enhanced-mcp-server.js"],
-      "env": {
-        "RAG_SERVER_URL": "http://localhost:8000"
-      }
-    }
-  }
-}
-```
-
-#### 8. Тестирование системы
+7. Настройка MCP в вашем ИИ ассистенте
+Следуйте инструкциям для Claude Desktop или VS Code Cline.
+8. Тестирование системы
 В Claude или Cline попробуйте эти команды:
-```
-Используй get_rag_stats чтобы проверить статус системы
-Используй ask_rag с вопросом "Как создать компонент в Vue.js?" и framework "vue"
-Используй memory_bank_init чтобы инициализировать память проекта
-Используй file_watcher_start чтобы начать отслеживание изменений
-```
+get_rag_stats
+ask_rag "Как создать класс в Python?" "python"
+memory_bank_status
+file_watcher_start
 
-### 🎯 Простой менеджер документации
+🎯 Простой менеджер документации
+Проект включает Простой менеджер документации (update_docs.py), который автоматизирует работу с документацией одной командой.
+🚀 Ключевые возможности:
 
-Проект включает **Простой менеджер документации** (`update_docs.py`), который полностью автоматизирует работу с документацией одной командой:
+📁 Обнаружение по папкам: Автоматически сканирует папку documentation/ на наличие документации технологий
+🏷️ Умное именование: Определяет типы технологий по именам папок (например, python_docs → Python)
+🔄 Конвертация HTML: Конвертирует HTML документацию в Markdown когда необходимо
+📝 Обновление конфигурации: Автоматически обновляет config.yaml с новыми технологиями
+📚 Полная индексация: Индексирует всё в RAG базу данных
+⚡ Настройка одной командой: Одна команда обрабатывает всё автоматически
 
-#### 🚀 Ключевые возможности:
-- **📁 Обнаружение по папкам**: Автоматически сканирует папку `documentation/` на наличие документации фреймворков
-- **🏷️ Умное именование**: Определяет типы фреймворков по именам папок (vue_docs → Vue.js, laravel_docs → Laravel)
-- **🔄 Конвертация HTML**: Конвертирует HTML документацию в Markdown когда необходимо
-- **📝 Обновление конфигурации**: Автоматически обновляет config.yaml с новыми фреймворками
-- **📚 Полная индексация**: Индексирует всё в RAG базу данных
-- **⚡ Настройка одной командой**: Одна команда обрабатывает всё автоматически
+📋 Простой справочник команд:
+python3 update_docs.py  # Полная автоматическая синхронизация
+python3 update_docs.py --scan  # Предварительный просмотр что будет обработано
+python3 update_docs.py --verbose  # Подробный вывод для отладки
 
-#### 📋 Простой справочник команд:
-```bash
-# 🔄 Полная автоматическая синхронизация - ОСНОВНАЯ КОМАНДА
-python3 update_docs.py
+🎯 Идеальный workflow для новых технологий:
 
-# 👀 Предварительный просмотр что будет обработано (без индексации)
-python3 update_docs.py --scan
+📁 Добавьте документацию в папку documentation/:# Примеры:
+git clone https://github.com/python/cpython.git documentation/python_docs
+cp -r /путь/к/java_docs documentation/java_docs
 
-# 📝 Подробный вывод для отладки
-python3 update_docs.py --verbose
-```
 
-#### 🎯 Идеальный workflow для новых фреймворков:
-1. **📁 Добавьте документацию** в папку `documentation/`:
-   ```bash
-   # Примеры:
-   git clone https://github.com/vuejs/docs.git documentation/vue_docs
-   cp -r /путь/к/react_docs documentation/react_docs
-   ```
-2. **🔄 Запустите автоматическую синхронизацию**: `python3 update_docs.py`
-3. **✅ Готово!** Фреймворк автоматически определён, конвертирован и проиндексирован
+🔄 Запустите автоматическую синхронизацию: python3 update_docs.py
+✅ Готово! Технология автоматически определена, конвертирована и проиндексирована
 
-#### 🏷️ Определение фреймворков по именам папок:
-Система автоматически распознаёт фреймворки по именам папок:
-- **vue_docs** → Vue.js
-- **laravel_docs** → Laravel  
-- **react_docs** → React
-- **tailwindcss_docs** → Tailwind CSS
-- **alpine_docs** → Alpine.js
-- **filament_docs** → Filament
-- **angular_docs** → Angular
-- **svelte_docs** → Svelte
-- **И любые другие** → Использует имя папки как имя фреймворка
+🏷️ Определение технологий по именам папок:
+Система автоматически распознаёт технологии по именам папок:
 
-#### 📊 Что происходит во время синхронизации:
-1. **🔍 Фаза сканирования**: Сканирует папку `documentation/` на наличие папок фреймворков
-2. **🏷️ Фаза определения**: Определяет имена фреймворков по именам папок
-3. **🔄 Фаза конвертации**: Конвертирует HTML в Markdown если нужно
-4. **📝 Фаза конфигурации**: Обновляет `config.yaml` с новыми фреймворками
-5. **📚 Фаза индексации**: Индексирует всю документацию в RAG базу данных
-6. **📊 Фаза отчёта**: Показывает подробные результаты и статистику
+python_docs → Python
+java_docs → Java
+custom_project_docs → Custom Project
+И любые другие → Использует имя папки как имя технологии
 
-#### 💡 Профессиональные советы:
-- Всегда запускайте `--scan` сначала, чтобы увидеть что будет обработано
-- Используйте последовательное именование папок: `framework_docs` или `framework-docs`
-- Система обрабатывает как HTML, так и Markdown документацию автоматически
-- Размещайте всю документацию в папке `documentation/` для автоматического обнаружения
-- Никакой ручной настройки не требуется - всё автоматически!
+🛠️ Доступные MCP инструменты
+RAG инструменты
 
-### 🛠️ Доступные MCP инструменты
+ask_rag - Запрос к документации любой технологии
 
-#### RAG инструменты
-- **`ask_rag`** - Запрос к документации фреймворков
-  - `question`: Ваш вопрос (строка)
-  - `framework`: Целевой фреймворк (vue, laravel, filament, alpine, tailwindcss)
-  - `model`: LLM модель (qwen, deepseek) - опционально
-  - `max_results`: Количество результатов (1-20) - опционально
+question: Ваш вопрос (строка)
+framework: Целевая технология (например, "python", "java", "my_project")
+model: LLM модель (qwen, deepseek) - опционально
+max_results: Количество результатов (1-20) - опционально
 
-- **`list_frameworks`** - Получить доступные фреймворки
-- **`get_rag_stats`** - Статистика базы данных
-- **`list_models`** - Доступные LLM модели
 
-#### Memory Bank инструменты
-- **`memory_bank_init`** - Инициализировать память проекта
-- **`memory_bank_status`** - Проверить статус memory bank
-- **`memory_bank_read`** - Прочитать файл memory bank
-  - `filename`: Файл для чтения (tasks.md, progress.md, и т.д.)
-- **`memory_bank_write`** - Записать в memory bank
-  - `filename`: Целевой файл
-  - `content`: Содержимое файла
-- **`memory_bank_search`** - Поиск в истории проекта
-  - `query`: Поисковые термины
-- **`memory_bank_archive`** - Архивировать завершенную задачу
-  - `taskId`: Идентификатор задачи
-  - `summary`: Краткое описание задачи
-  - `completedWork`: Описание работы
-  - `keyDecisions`: Важные решения
-  - `lessonsLearned`: Извлеченные уроки
+list_frameworks - Получить доступные технологии
 
-#### File Watcher инструменты
-- **`file_watcher_start`** - Начать мониторинг файлов
-- **`file_watcher_stop`** - Остановить мониторинг
-- **`file_watcher_stats`** - Получить статистику мониторинга
+get_rag_stats - Статистика базы данных
 
-### 💡 Примеры использования
+list_models - Доступные LLM модели
 
-#### Разработка на Laravel
-```
-# Получить помощь по Laravel
-ask_rag("Как создать middleware в Laravel?", "laravel")
+
+Memory Bank инструменты
+
+memory_bank_init - Инициализировать память проекта
+memory_bank_status - Проверить статус memory bank
+memory_bank_read - Прочитать файл memory bank
+filename: Файл для чтения (tasks.md, progress.md, и т.д.)
+
+
+memory_bank_write - Записать в memory bank
+filename: Целевой файл
+content: Содержимое файла
+
+
+memory_bank_search - Поиск в истории проекта
+query: Поисковые термины
+
+
+memory_bank_archive - Архивировать завершенную задачу
+taskId: Идентификатор задачи
+summary: Краткое описание задачи
+completedWork: Описание работы
+keyDecisions: Важные решения
+lessonsLearned: Извлеченные уроки
+
+
+
+File Watcher инструменты
+
+file_watcher_start - Начать мониторинг файлов
+file_watcher_stop - Остановить мониторинг
+file_watcher_stats - Получить статистику мониторинга
+
+💡 Примеры использования
+Ниже приведены примеры использования системы с разными технологиями. Обратите внимание, что система не ограничена этими технологиями; вы можете использовать её с любой документацией, которую добавите в папку documentation/.
+Разработка на Python
+# Получить помощь по Python
+ask_rag("Как создать класс в Python?", "python")
 
 # Отследить вашу работу
-memory_bank_write("activeContext.md", "Работаю над middleware для аутентификации")
+memory_bank_write("activeContext.md", "Создание Python скриптов с ООП")
 
 # Начать мониторинг изменений
 file_watcher_start()
 
 # Поиск в истории проекта
-memory_bank_search("middleware")
-```
+memory_bank_search("классы")
 
-#### Разработка на Vue.js
-```
-# Изучить компоненты Vue
-ask_rag("Как использовать Composition API в Vue 3?", "vue")
+Разработка API на Java
+# Узнать о Java API
+ask_rag("Как использовать потоки в Java?", "java")
 
 # Обновить прогресс проекта
-memory_bank_write("progress.md", "## Текущая задача\nРеализация реактивных форм с Composition API")
+memory_bank_write("progress.md", "## Текущая задача\nРеализация потоков Java для обработки данных")
 
 # Архивировать завершенную функцию
-memory_bank_archive("vue-forms", {
-  "summary": "Реализованы реактивные формы",
-  "completedWork": "Созданы компоненты форм с валидацией",
-  "keyDecisions": "Использовали Composition API для лучшей переиспользуемости"
+memory_bank_archive("java-streams", {
+  "summary": "Реализовано потоковое обработка",
+  "completedWork": "Созданы операции потоков для фильтрации данных",
+  "keyDecisions": "Использованы потоки Java 8 для лучшей производительности"
 })
-```
 
-#### Админ панель Filament
-```
-# Получить руководство по Filament
-ask_rag("Как создать ресурс в Filament?", "filament")
+Разработка собственного проекта
+# Получить помощь для вашего собственного проекта
+ask_rag("Как реализовать функцию X в моем проекте?", "my_project")
 
-# Отследить разработку админ панели
-memory_bank_write("techContext.md", "Создание админ панели с Filament v3")
-```
+# Отследить разработку проекта
+memory_bank_write("techContext.md", "Создание пользовательской функции с особыми требованиями")
 
-### 🔧 Конфигурация
-
-#### Структура config.yaml
-```yaml
-# Конфигурация LLM
-llm:
-  models:
-    qwen:
-      api_url: http://127.0.0.1:1234/v1/completions
-      model_name: meta-llama-3.1-8b-instruct
-      max_tokens: 800
-      temperature: 0.2
-
-# Пути к фреймворкам
+🔧 Конфигурация
+Структура config.yaml
 frameworks:
-  laravel:
+  # Добавьте ваши технологии здесь
+  python:
     enabled: true
-    path: /путь/к/laravel_docs
-    description: Laravel - PHP Framework for Web Artisans
-  vue:
+    path: /путь/к/python_docs
+    description: Python Programming Language
+  java:
     enabled: true
-    path: /путь/к/vue_docs
-    description: Vue.js - Progressive JavaScript Framework
+    path: /путь/к/java_docs
+    description: Java Programming Language
+  # Пример для вашего собственного проекта
+  my_project:
+    enabled: true
+    path: /путь/к/my_project_docs
+    description: My Custom Project Documentation
 
-# Настройки базы данных
-database:
-  collection_name: universal_docs
-  path: ./chroma_storage
-```
-
-#### Структура файлов Memory Bank
-```
+Структура файлов Memory Bank
 memory-bank/
 ├── tasks.md              # Текущие задачи
 ├── activeContext.md      # Текущий контекст
@@ -930,12 +560,9 @@ memory-bank/
 ├── creative/             # Дизайнерские решения
 ├── reflection/           # Рефлексии по задачам
 └── archive/              # Завершенные задачи
-```
 
-### 🚨 Устранение неполадок
-
-#### Проблемы с RAG сервером
-```bash
+🚨 Устранение неполадок
+Проблемы с RAG сервером
 # Проверить, запущен ли сервер
 curl http://localhost:8000/stats
 
@@ -944,10 +571,8 @@ python3 rag_server.py
 
 # Проверить логи
 tail -f logs/rag_system.log
-```
 
-#### Проблемы с MCP сервером
-```bash
+Проблемы с MCP сервером
 # Тестировать MCP сервер
 cd mcp-server
 npm run test:memory-bank
@@ -957,10 +582,8 @@ npm run start:enhanced
 
 # Проверить версию Node.js
 node --version  # Должна быть 16+
-```
 
-#### Проблемы с Memory Bank
-```bash
+Проблемы с Memory Bank
 # Проверить статус memory bank в Claude/Cline
 memory_bank_status()
 
@@ -969,44 +592,33 @@ memory_bank_init()
 
 # Проверить права доступа к файлам
 ls -la memory-bank/
-```
 
-#### Проблемы с локальной LLM
-- **LM Studio**: Убедитесь, что сервер запущен на порту 1234
-- **Ollama**: Проверьте, что `ollama serve` активен
-- **Модель**: Убедитесь, что meta-llama-3.1-8b-instruct загружена
-- **API**: Протестируйте с `curl http://127.0.0.1:1234/v1/models`
+Проблемы с локальной LLM
 
-### 📊 Мониторинг системы
+LM Studio: Убедитесь, что сервер запущен на порту 1234
+Ollama: Проверьте, что ollama serve активен
+Модель: Убедитесь, что meta-llama-3.1-8b-instruct загружена
+API: Протестируйте с curl http://127.0.0.1:1234/v1/models
 
-#### Проверка состояния системы
-```
+📊 Мониторинг системы
+Проверка состояния системы
 # В Claude/Cline
 get_rag_stats()           # Статус RAG базы данных
 memory_bank_status()      # Статус memory bank  
 file_watcher_stats()      # Статус мониторинга файлов
-list_frameworks()         # Доступные фреймворки
-```
+list_frameworks()         # Доступные технологии
 
-#### Метрики производительности
-- **RAG База данных**: ~10,000+ индексированных документов
-- **Время ответа**: <2 секунд для большинства запросов
-- **Использование памяти**: ~500MB для полной системы
-- **Мониторинг файлов**: Обнаружение изменений в реальном времени
+Метрики производительности
 
----
+RAG База данных: ~10,000+ индексированных документов
+Время ответа: <2 секунд для большинства запросов
+Использование памяти: ~500MB для полной системы
+Мониторинг файлов: Обнаружение изменений в реальном времени
 
-## 🤝 Contributing / Вклад в развитие
 
-We welcome contributions! Please feel free to submit a Pull Request.
-Мы приветствуем вклад в развитие! Не стесняйтесь отправлять Pull Request.
+🤝 Contributing / Вклад в развитие
+We welcome contributions! Please feel free to submit a Pull Request.Мы приветствуем вклад в развитие! Не стесняйтесь отправлять Pull Request.
+📄 License / Лицензия
+This project is licensed under the MIT License - see the LICENSE file for details.Этот проект лицензирован под MIT License - см. файл LICENSE для подробностей.
 
-## 📄 License / Лицензия
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-Этот проект лицензирован под MIT License - см. файл [LICENSE](LICENSE) для подробностей.
-
----
-
-**Created with ❤️ for enhanced AI-assisted development**
-**Создано с ❤️ для улучшенной разработки с помощью ИИ**
+Created with ❤️ for enhanced AI-assisted developmentСоздано с ❤️ для улучшенной разработки с помощью ИИ
