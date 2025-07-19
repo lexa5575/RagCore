@@ -13,7 +13,7 @@ database:
 llm:
   provider: lm_studio
   api_url: http://127.0.0.1:1234/v1/completions
-  model_name: meta-llama-3.1-8b-instruct  # ИЗМЕНИТЕ НА ВАШУ МОДЕЛЬ
+  model_name: meta-llama-3.1-8b-instruct  # ИЗМЕНИТЕ НА ВАШУ МОДЕЛЬ # CHANGE ON YOUR MODEL
   max_tokens: 800
   temperature: 0.2
   stop: ["<|eot_id|>", "<|end_of_text|>", "Human:", "User:"]
@@ -22,7 +22,7 @@ llm:
 # llm:
 #   provider: ollama
 #   api_url: http://localhost:11434/api/generate
-#   model_name: llama3.1:8b  # ИЗМЕНИТЕ НА ВАШУ МОДЕЛЬ OLLAMA
+#   model_name: llama3.1:8b  # ИЗМЕНИТЕ НА ВАШУ МОДЕЛЬ OLLAMA # CHANGE ON YOUR MODEL
 #   max_tokens: 800
 #   temperature: 0.2
 
