@@ -40,7 +40,7 @@ echo "🔧 Activating virtual environment..."
 source venv/bin/activate
 
 # Устанавливаем зависимости
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 
 # Установка Node.js зависимостей
 echo ""
@@ -55,38 +55,42 @@ echo "📁 Creating necessary directories..."
 mkdir -p chroma_storage
 mkdir -p logs
 
-# Создание локальной конфигурации LLM
+# Создание конфигурации LLM
 echo ""
-echo "⚙️  Setting up local LLM configuration..."
-if [ ! -f config.local.yaml ]; then
-    cp config.local.example.yaml config.local.yaml
-    echo "✅ Created config.local.yaml from example"
-    echo "⚠️  IMPORTANT: Configure config.local.yaml for your LLM model!"
-    echo "   Open config.local.yaml and change:"
+echo "⚙️  Setting up LLM configuration..."
+if [ ! -f config.yaml ]; then
+    if [ -f config.example.yaml ]; then
+        cp config.example.yaml config.yaml
+        echo "✅ Created config.yaml from example"
+    else
+        echo "✅ config.yaml will be created by update_docs.py"
+    fi
+    echo "⚠️  IMPORTANT: Configure config.yaml for your LLM model!"
+    echo "   Open config.yaml and change:"
     echo "   - model_name: to your model name"
     echo "   - api_url: to your LLM server address"
     echo "   - default_model: to your preferred model"
 else
-    echo "✅ config.local.yaml already exists"
+    echo "✅ config.yaml already exists"
 fi
 
 # Проверка существующих папок с документацией
 echo ""
 echo "🔍 Checking for existing documentation..."
-python3 smart_docs_manager.py --preview
+python3 update_docs.py --scan
 
 echo ""
 echo "✅ Installation completed!"
 echo ""
 echo "🎯 Next steps:"
-echo "1. Add documentation folders to project root"
-echo "2. Run: python3 smart_docs_manager.py --sync-all"
+echo "1. Add documentation folders to documentation/ directory"
+echo "2. Run: python3 update_docs.py"
 echo "3. Start RAG server: python3 rag_server.py"
 echo "4. Start MCP server: cd mcp-server && npm run start:enhanced"
 echo ""
 echo "💡 Useful commands:"
-echo "   python3 smart_docs_manager.py --preview    # Preview changes"
-echo "   python3 smart_docs_manager.py --status     # System status"
-echo "   python3 smart_docs_manager.py --sync-all   # Full synchronization"
+echo "   python3 update_docs.py --scan    # Preview changes"
+echo "   python3 update_docs.py           # Full synchronization"
+echo "   python3 rag_server.py            # Start RAG server"
 echo ""
 echo "📚 Documentation: README.md"

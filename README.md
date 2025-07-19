@@ -56,8 +56,16 @@ Step 1: Clone and Setup Python Environment
 git clone https://github.com/lexa5575/rag_server.git
 cd rag_server
 
+# Create virtual environment (REQUIRED!)
+python3 -m venv venv
+
+# Activate virtual environment
+source venv/bin/activate  # macOS/Linux
+# OR for Windows:
+# venv\Scripts\activate
+
 # Install Python dependencies
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 
 Step 2: Setup Node.js Dependencies
 cd mcp-server
@@ -79,12 +87,25 @@ documentation/custom_project_docs/ for your own project's documentation
 
 You can clone repositories or copy local files into this folder.
 🚀 Quick Start
-1. Run Installation Script
-./install.sh
+1. Create Virtual Environment (REQUIRED!)
+```bash
+# Create virtual environment
+python3 -m venv venv
 
-This will install all dependencies and check your system
-2. Configure Your Local LLM (One-time setup)
-Edit config.local.yaml to set up your local LLM.
+# Activate it
+source venv/bin/activate  # macOS/Linux
+# OR for Windows:
+# venv\Scripts\activate
+```
+
+2. Run Installation Script
+```bash
+./install.sh
+```
+*This will install all dependencies and check your system*
+
+3. Configure Your Local LLM (One-time setup)
+Edit config.yaml to set up your local LLM.
 3. Add Documentation to documentation/ Folder
 Follow the instructions in Step 4 above.
 4. Run Automatic Documentation Sync
@@ -359,8 +380,16 @@ Claude Desktop или VS Code с расширением Cline
 git clone https://github.com/lexa5575/rag_server.git
 cd rag_server
 
+# Создание виртуального окружения (ОБЯЗАТЕЛЬНО!)
+python3 -m venv venv
+
+# Активация виртуального окружения
+source venv/bin/activate  # macOS/Linux
+# ИЛИ для Windows:
+# venv\Scripts\activate
+
 # Установка Python зависимостей
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 
 Шаг 2: Настройка Node.js зависимостей
 cd mcp-server
@@ -382,12 +411,25 @@ documentation/custom_project_docs/ для документации вашего 
 
 Вы можете клонировать репозитории или скопировать локальные файлы в эту папку.
 🚀 Быстрый старт
-1. Запуск скрипта установки
-./install.sh
+1. Создание виртуального окружения (ОБЯЗАТЕЛЬНО!)
+```bash
+# Создаем виртуальное окружение
+python3 -m venv venv
 
-Это установит все зависимости и проверит вашу систему
-2. Настройка локальной LLM (одноразовая настройка)
-Отредактируйте config.local.yaml, чтобы настроить вашу локальную LLM.
+# Активируем его
+source venv/bin/activate  # macOS/Linux
+# или для Windows:
+# venv\Scripts\activate
+```
+
+2. Запуск скрипта установки
+```bash
+./install.sh
+```
+*Это установит все зависимости и проверит вашу систему*
+
+3. Настройка локальной LLM (одноразовая настройка)
+Отредактируйте config.yaml, чтобы настроить вашу локальную LLM.
 3. Добавьте документацию в папку documentation/
 Следуйте инструкциям в Шаге 4 выше.
 4. Запустите автоматическую синхронизацию документации
