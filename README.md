@@ -87,35 +87,19 @@ documentation/custom_project_docs/ for your own project's documentation
 
 You can clone repositories or copy local files into this folder.
 🚀 Quick Start
-1. Run Installation Script
-```bash
-./install.sh
-```
-*This will create virtual environment, install all dependencies and check your system*
-
-2. Configure Your Local LLM (One-time setup)
-Edit config.yaml to set up your local LLM.
-
-3. Add Documentation to documentation/ Folder
-```bash
-# Examples:
-cp -r /path/to/python_docs documentation/
-git clone https://github.com/vuejs/docs.git documentation/vue_docs
-```
-
-4. Run Automatic Documentation Sync
+1. Run Automatic Documentation Sync
 ```bash
 python3 update_docs.py
 ```
 
-5. Start the RAG Server
+2. Start the RAG Server
 python3 rag_server.py
 
-6. Start the Enhanced MCP Server
+3. Start the Enhanced MCP Server
 cd mcp-server
 npm run start:enhanced
 
-7. Configure MCP in Your AI Assistant
+4. Configure MCP in Your AI Assistant
 
 #### For Claude CLI
 
@@ -448,35 +432,19 @@ documentation/custom_project_docs/ для документации вашего 
 
 Вы можете клонировать репозитории или скопировать локальные файлы в эту папку.
 🚀 Быстрый старт
-1. Запуск скрипта установки
-```bash
-./install.sh
-```
-*Это создаст виртуальное окружение, установит все зависимости и проверит вашу систему*
-
-2. Настройка локальной LLM (одноразовая настройка)
-Отредактируйте config.yaml, чтобы настроить вашу локальную LLM.
-
-3. Добавьте документацию в папку documentation/
-```bash
-# Примеры:
-cp -r /путь/к/python_docs documentation/
-git clone https://github.com/vuejs/docs.git documentation/vue_docs
-```
-
-4. Запустите автоматическую синхронизацию документации
+1. Запустите автоматическую синхронизацию документации
 ```bash
 python3 update_docs.py
 ```
 
-5. Запуск RAG сервера
+2. Запуск RAG сервера
 python3 rag_server.py
 
-6. Запуск расширенного MCP сервера
+3. Запуск расширенного MCP сервера
 cd mcp-server
 npm run start:enhanced
 
-7. Настройка MCP в вашем ИИ ассистенте
+4. Настройка MCP в вашем ИИ ассистенте
 
 #### Для Claude CLI
 
@@ -502,6 +470,36 @@ npm run start:enhanced
   ]
 }
 ```
+#### Для VS Code с Cline
+
+1. Нажмите на значок шестеренки ⚙️ в панели Cline
+2. Выберите "Configure MCP Servers"
+3. Вставьте следующую конфигурацию:
+
+```json
+{
+  "mcpServers": {
+    "rag-server": {
+      "command": "npm",
+      "args": ["run", "start:enhanced"],
+      "cwd": "ПУТЬ_К_ПРОЕКТУ",
+      "env": {
+        "RAG_SERVER_URL": "http://localhost:8000"
+      },
+      "autoApprove": [
+        "memory_bank_status", "memory_bank_read", "list_frameworks",
+        "get_rag_stats", "ask_rag", "file_watcher_stats"
+      ]
+    }
+  }
+}
+```
+
+Замените `ПУТЬ_К_ПРОЕКТУ` на полный путь к вашему проекту, например:
+- Windows: `C:\\Users\\username\\projects\\RagCore`
+- macOS/Linux: `/home/username/projects/RagCore`
+
+```
 
 2. Убедитесь, что оба сервера запущены:
    - RAG сервер: `python3 rag_server.py`
@@ -519,7 +517,7 @@ npm run start:enhanced
    get_rag_stats
    ```
 8. Тестирование системы
-В Claude или Cline попробуйте эти команды:
+В Claude Desktop попробуйте эти команды:
 get_rag_stats
 ask_rag "Как создать класс в Python?" "python"
 memory_bank_status
