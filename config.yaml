@@ -1,5 +1,5 @@
-# 🚀 RAG Server Configuration Example
-# Copy this file to config.yaml and edit the LLM section
+# 🚀 RAG Server Configuration
+# Universal configuration with relative paths
 
 # 📚 Database settings
 database:
