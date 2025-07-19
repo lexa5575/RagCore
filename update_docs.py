@@ -185,6 +185,10 @@ class SimpleDocumentationManager:
             if 'frameworks' not in config:
                 config['frameworks'] = {}
             
+            # Проверяем, что frameworks не None
+            if config['frameworks'] is None:
+                config['frameworks'] = {}
+            
             # Сохраняем существующие настройки пользователя
             existing_frameworks = config['frameworks'].copy()
             

@@ -52,20 +52,20 @@ Node.js 16+ with npm
 Local LLM Server (LM Studio, Ollama, or similar)
 Claude Desktop or VS Code with Cline extension
 
-Step 1: Clone and Setup Python Environment
+Step 1: Clone and Run Installation Script
+```bash
 git clone https://github.com/lexa5575/rag_server.git
 cd rag_server
+./install.sh
+```
 
-# Create virtual environment (REQUIRED!)
-python3 -m venv venv
-
-# Activate virtual environment
-source venv/bin/activate  # macOS/Linux
-# OR for Windows:
-# venv\Scripts\activate
-
-# Install Python dependencies
-pip3 install -r requirements.txt
+This will:
+- Create Python virtual environment
+- Activate the environment
+- Install all Python dependencies
+- Install Node.js dependencies
+- Create necessary directories
+- Set up initial configuration
 
 Step 2: Setup Node.js Dependencies
 cd mcp-server
@@ -87,29 +87,26 @@ documentation/custom_project_docs/ for your own project's documentation
 
 You can clone repositories or copy local files into this folder.
 🚀 Quick Start
-1. Create Virtual Environment (REQUIRED!)
-```bash
-# Create virtual environment
-python3 -m venv venv
-
-# Activate it
-source venv/bin/activate  # macOS/Linux
-# OR for Windows:
-# venv\Scripts\activate
-```
-
-2. Run Installation Script
+1. Run Installation Script
 ```bash
 ./install.sh
 ```
-*This will install all dependencies and check your system*
+*This will create virtual environment, install all dependencies and check your system*
 
-3. Configure Your Local LLM (One-time setup)
+2. Configure Your Local LLM (One-time setup)
 Edit config.yaml to set up your local LLM.
+
 3. Add Documentation to documentation/ Folder
-Follow the instructions in Step 4 above.
+```bash
+# Examples:
+cp -r /path/to/python_docs documentation/
+git clone https://github.com/vuejs/docs.git documentation/vue_docs
+```
+
 4. Run Automatic Documentation Sync
+```bash
 python3 update_docs.py
+```
 
 5. Start the RAG Server
 python3 rag_server.py
@@ -376,20 +373,20 @@ Node.js 16+ с npm
 Локальный LLM сервер (LM Studio, Ollama или аналогичный)
 Claude Desktop или VS Code с расширением Cline
 
-Шаг 1: Клонирование и настройка Python окружения
+Шаг 1: Клонирование и запуск скрипта установки
+```bash
 git clone https://github.com/lexa5575/rag_server.git
 cd rag_server
+./install.sh
+```
 
-# Создание виртуального окружения (ОБЯЗАТЕЛЬНО!)
-python3 -m venv venv
-
-# Активация виртуального окружения
-source venv/bin/activate  # macOS/Linux
-# ИЛИ для Windows:
-# venv\Scripts\activate
-
-# Установка Python зависимостей
-pip3 install -r requirements.txt
+Это:
+- Создаст виртуальное окружение Python
+- Активирует окружение
+- Установит все зависимости Python
+- Установит зависимости Node.js
+- Создаст необходимые директории
+- Настроит начальную конфигурацию
 
 Шаг 2: Настройка Node.js зависимостей
 cd mcp-server
@@ -411,29 +408,26 @@ documentation/custom_project_docs/ для документации вашего 
 
 Вы можете клонировать репозитории или скопировать локальные файлы в эту папку.
 🚀 Быстрый старт
-1. Создание виртуального окружения (ОБЯЗАТЕЛЬНО!)
-```bash
-# Создаем виртуальное окружение
-python3 -m venv venv
-
-# Активируем его
-source venv/bin/activate  # macOS/Linux
-# или для Windows:
-# venv\Scripts\activate
-```
-
-2. Запуск скрипта установки
+1. Запуск скрипта установки
 ```bash
 ./install.sh
 ```
-*Это установит все зависимости и проверит вашу систему*
+*Это создаст виртуальное окружение, установит все зависимости и проверит вашу систему*
 
-3. Настройка локальной LLM (одноразовая настройка)
+2. Настройка локальной LLM (одноразовая настройка)
 Отредактируйте config.yaml, чтобы настроить вашу локальную LLM.
+
 3. Добавьте документацию в папку documentation/
-Следуйте инструкциям в Шаге 4 выше.
+```bash
+# Примеры:
+cp -r /путь/к/python_docs documentation/
+git clone https://github.com/vuejs/docs.git documentation/vue_docs
+```
+
 4. Запустите автоматическую синхронизацию документации
+```bash
 python3 update_docs.py
+```
 
 5. Запуск RAG сервера
 python3 rag_server.py
