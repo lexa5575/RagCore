@@ -116,7 +116,47 @@ cd mcp-server
 npm run start:enhanced
 
 7. Configure MCP in Your AI Assistant
-Follow the instructions for Claude Desktop or VS Code Cline.
+
+#### For Claude CLI
+
+1. Create a `.mcp.json` file in the project root with the following content:
+
+```json
+{
+  "servers": [
+    {
+      "name": "rag-server",
+      "type": "stdio",
+      "command": "node",
+      "args": ["mcp-server/enhanced-mcp-server.js"],
+      "env": {
+        "RAG_SERVER_URL": "http://localhost:8000",
+        "WORKSPACE_FOLDER": "."
+      },
+      "autoApprove": [
+        "memory_bank_status", "memory_bank_read", "list_frameworks",
+        "get_rag_stats", "ask_rag", "file_watcher_stats"
+      ]
+    }
+  ]
+}
+```
+
+2. Make sure both servers are running:
+   - RAG server: `python3 rag_server.py`
+   - MCP server: `cd mcp-server && npm run start:enhanced`
+
+3. Start Claude CLI with MCP support:
+   ```bash
+   claude --mcp chat
+   ```
+
+4. **Important**: Close the current terminal window and open a new one with Claude CLI for changes to take effect.
+
+5. Test the connection by typing:
+   ```
+   get_rag_stats
+   ```
 8. Test the System
 In Claude or Cline, try these commands:
 get_rag_stats
@@ -437,7 +477,47 @@ cd mcp-server
 npm run start:enhanced
 
 7. Настройка MCP в вашем ИИ ассистенте
-Следуйте инструкциям для Claude Desktop или VS Code Cline.
+
+#### Для Claude CLI
+
+1. Создайте файл `.mcp.json` в корне проекта со следующим содержимым:
+
+```json
+{
+  "servers": [
+    {
+      "name": "rag-server",
+      "type": "stdio",
+      "command": "node",
+      "args": ["mcp-server/enhanced-mcp-server.js"],
+      "env": {
+        "RAG_SERVER_URL": "http://localhost:8000",
+        "WORKSPACE_FOLDER": "."
+      },
+      "autoApprove": [
+        "memory_bank_status", "memory_bank_read", "list_frameworks",
+        "get_rag_stats", "ask_rag", "file_watcher_stats"
+      ]
+    }
+  ]
+}
+```
+
+2. Убедитесь, что оба сервера запущены:
+   - RAG сервер: `python3 rag_server.py`
+   - MCP сервер: `cd mcp-server && npm run start:enhanced`
+
+3. Запустите Claude CLI с поддержкой MCP:
+   ```bash
+   claude --mcp chat
+   ```
+
+4. **Важно**: Закройте текущее окно терминала и откройте новое с Claude CLI, чтобы изменения вступили в силу.
+
+5. Проверьте подключение, введя:
+   ```
+   get_rag_stats
+   ```
 8. Тестирование системы
 В Claude или Cline попробуйте эти команды:
 get_rag_stats

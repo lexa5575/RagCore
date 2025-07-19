@@ -289,12 +289,21 @@ class SimpleDocumentationManager:
         """Извлекает количество чанков из вывода индексатора"""
         import re
         
-        # Search for pattern "chunks: NUMBER"
+        # Шаблон для поиска "Documents count: NUMBER"
+        match = re.search(r'Documents count:\s*(\d+)', output)
+        if match:
+            return int(match.group(1))
+        
+        # Шаблон для поиска "🔧 Documents count: NUMBER"
+        match = re.search(r'🔧 Documents count:\s*(\d+)', output)
+        if match:
+            return int(match.group(1))
+        
+        # Исходные шаблоны
         match = re.search(r'chunks:\s*(\d+)', output)
         if match:
             return int(match.group(1))
         
-        # Alternative pattern
         match = re.search(r'(\d+)\s+semantic chunks', output)
         if match:
             return int(match.group(1))
