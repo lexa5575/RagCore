@@ -1,79 +1,34 @@
-# 🚀 RAG Server Configuration
-# Universal configuration with relative paths
-
-# 📚 Database settings
 database:
   collection_name: universal_docs
   path: ./chroma_storage
-
-# 🤖 LLM Configuration (EDIT THIS SECTION!)
-# ВЫБЕРИТЕ ОДИН ВАРИАНТ И РАСКОММЕНТИРУЙТЕ
-
-# === ВАРИАНТ 1: LM Studio (рекомендуется) ===
 llm:
   provider: lm_studio
   api_url: http://127.0.0.1:1234/v1/completions
-  model_name: meta-llama-3.1-8b-instruct  # ИЗМЕНИТЕ НА ВАШУ МОДЕЛЬ # CHANGE ON YOUR MODEL
+  model_name: meta-llama-3.1-8b-instruct
   max_tokens: 800
   temperature: 0.2
-  stop: ["<|eot_id|>", "<|end_of_text|>", "Human:", "User:"]
-
-# === ВАРИАНТ 2: Ollama ===
-# llm:
-#   provider: ollama
-#   api_url: http://localhost:11434/api/generate
-#   model_name: llama3.1:8b  # ИЗМЕНИТЕ НА ВАШУ МОДЕЛЬ OLLAMA # CHANGE ON YOUR MODEL
-#   max_tokens: 800
-#   temperature: 0.2
-
-# 🌐 Server settings
+  stop:
+  - <|eot_id|>
+  - <|end_of_text|>
+  - 'Human:'
+  - 'User:'
 server:
   host: 0.0.0.0
   port: 8000
-
-# 📁 Frameworks (auto-updated by update_docs.py)
 frameworks:
-  vue:
-    name: Vue.js
-    enabled: true
-    path: ./documentation/vue_docs
-    description: Vue.js Framework
-    type: frontend
-  laravel:
-    name: Laravel
-    enabled: true
-    path: ./documentation/laravel_docs
-    description: Laravel PHP Framework
-    type: backend
-  alpine:
-    name: Alpine.js
-    enabled: true
-    path: ./documentation/alpine_docs
-    description: Alpine.js Framework
-    type: frontend
-  filament:
-    name: Filament
-    enabled: true
-    path: ./documentation/filament_docs
-    description: Filament Admin Panel
-    type: admin
-  tailwindcss:
-    name: Tailwind CSS
-    enabled: true
-    path: ./documentation/tailwindcss_docs
-    description: Tailwind CSS Framework
-    type: css
-
-# 📊 Logging
+  # Add your frameworks here
+  # Example:
+  # my_framework:
+  #   name: My Framework
+  #   description: My Framework Documentation
+  #   path: ./documentation/my_framework_docs
+  #   type: markdown
+  #   enabled: true
 logging:
   level: INFO
   file: ./logs/rag_system.log
-
-# 💾 Cache settings
 cache:
   enabled: true
   ttl: 3600
-
-# 🔧 Embeddings
 embeddings:
   model: all-MiniLM-L6-v2

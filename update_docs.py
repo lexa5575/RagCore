@@ -181,43 +181,42 @@ class SimpleDocumentationManager:
             else:
                 config = {}
             
-            # Убеждаемся что есть секция frameworks
-            if 'frameworks' not in config:
-                config['frameworks'] = {}
+            # Сохраняем старые фреймворки для сравнения
+            old_frameworks = config.get('frameworks', {}) or {}
             
-            # Проверяем, что frameworks не None
-            if config['frameworks'] is None:
-                config['frameworks'] = {}
+            # ПОЛНОСТЬЮ ПЕРЕЗАПИСЫВАЕМ секцию frameworks
+            config['frameworks'] = {}
             
-            # Сохраняем существующие настройки пользователя
-            existing_frameworks = config['frameworks'].copy()
-            
-            # Добавляем/обновляем фреймворки
-            updated_count = 0
+            # Добавляем только те фреймворки, которые найдены в documentation/
+            added_count = 0
             for framework_name, info in frameworks.items():
-                if framework_name not in existing_frameworks:
-                    # Новый фреймворк
-                    config['frameworks'][framework_name] = {
-                        'name': info['name'],
-                        'description': info['description'],
-                        'path': info['path'],
-                        'type': info['type'],
-                        'enabled': info['enabled']
-                    }
-                    updated_count += 1
-                    logger.info(f"➕ Added new framework: {info['name']}")
-                else:
-                    # Update path if changed
-                    if existing_frameworks[framework_name].get('path') != info['path']:
-                        config['frameworks'][framework_name]['path'] = info['path']
-                        updated_count += 1
-                        logger.info(f"🔄 Updated path for: {info['name']}")
+                config['frameworks'][framework_name] = {
+                    'name': info['name'],
+                    'description': info['description'],
+                    'path': info['path'],
+                    'type': info['type'],
+                    'enabled': info['enabled']
+                }
+                added_count += 1
+                logger.info(f"✅ Framework: {info['name']}")
             
-            # Save updated config
+            # Подсчитываем изменения
+            removed_frameworks = set(old_frameworks.keys()) - set(frameworks.keys())
+            new_frameworks = set(frameworks.keys()) - set(old_frameworks.keys())
+            
+            # Логируем изменения
+            if removed_frameworks:
+                logger.info(f"🗑️  Removed frameworks: {', '.join(removed_frameworks)}")
+            
+            if new_frameworks:
+                logger.info(f"➕ New frameworks: {', '.join(new_frameworks)}")
+            
+            # Сохраняем обновленный конфиг
             with open(config_file, 'w', encoding='utf-8') as f:
                 yaml.dump(config, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
             
-            logger.info(f"✅ Config.yaml updated! Changes: {updated_count}")
+            logger.info(f"✅ Config.yaml synchronized! Total frameworks: {len(frameworks)}")
+            logger.info(f"   📊 Added: {len(new_frameworks)}, Removed: {len(removed_frameworks)}")
             return True
             
         except Exception as e:

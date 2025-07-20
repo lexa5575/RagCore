@@ -54,8 +54,8 @@ Claude Desktop or VS Code with Cline extension
 
 Step 1: Clone and Run Installation Script
 ```bash
-git clone https://github.com/lexa5575/rag_server.git
-cd rag_server
+git clone https://github.com/lexa5575/RagCore
+cd ragcore
 ./install.sh
 ```
 
@@ -95,9 +95,7 @@ python3 rag_server.py
 cd mcp-server
 npm run start:enhanced
 
-4. Configure MCP in Your AI Assistant
-
-#### For Claude CLI
+4. Configure MCP for Claude CLI
 
 1. Create a `.mcp.json` file in your project root with the following content:
 
@@ -121,33 +119,16 @@ npm run start:enhanced
 }
 ```
 
-**Alternative (if global command doesn't work):**
-```json
-{
-  "mcpServers": {
-    "rag-server": {
-      "command": "node",
-      "args": ["/full/path/to/chanki/mcp-server/enhanced-mcp-server.js"],
-      "env": {
-        "RAG_SERVER_URL": "http://localhost:8000"
-      }
-    }
-  }
-}
-```
-
 2. Make sure both servers are running:
    - RAG server: `python3 rag_server.py`
-   - MCP server: `cd mcp-server && npm run start:enhanced`
+   - MCP server: `npm run start:enhanced`
 
 3. Start Claude CLI with MCP support:
    ```bash
    claude --mcp chat
    ```
 
-4. **Important**: Close the current terminal window and open a new one with Claude CLI for changes to take effect.
-
-5. Test the connection by typing:
+4. Test the connection by typing:
    ```
    get_rag_stats
    ```
@@ -409,8 +390,8 @@ Claude Desktop или VS Code с расширением Cline
 
 Шаг 1: Клонирование и запуск скрипта установки
 ```bash
-git clone https://github.com/lexa5575/rag_server.git
-cd rag_server
+git clone https://github.com/lexa5575/RagCore
+cd ragcore
 ./install.sh
 ```
 
@@ -450,9 +431,7 @@ python3 rag_server.py
 cd mcp-server
 npm run start:enhanced
 
-4. Настройка MCP в вашем ИИ ассистенте
-
-#### Для Claude CLI
+4. Настройка MCP для Claude CLI
 
 1. Создайте файл `.mcp.json` в корне вашего проекта со следующим содержимым:
 
@@ -476,63 +455,16 @@ npm run start:enhanced
 }
 ```
 
-**Альтернатива (если глобальная команда не работает):**
-```json
-{
-  "mcpServers": {
-    "rag-server": {
-      "command": "node",
-      "args": ["/полный/путь/к/chanki/mcp-server/enhanced-mcp-server.js"],
-      "env": {
-        "RAG_SERVER_URL": "http://localhost:8000"
-      }
-    }
-  }
-}
-```
-#### Для VS Code с Cline
-
-1. Нажмите на значок шестеренки ⚙️ в панели Cline
-2. Выберите "Configure MCP Servers"
-3. Вставьте следующую конфигурацию:
-
-```json
-{
-  "mcpServers": {
-    "rag-server": {
-      "command": "npm",
-      "args": ["run", "start:enhanced"],
-      "cwd": "ПУТЬ_К_ПРОЕКТУ",
-      "env": {
-        "RAG_SERVER_URL": "http://localhost:8000"
-      },
-      "autoApprove": [
-        "memory_bank_status", "memory_bank_read", "list_frameworks",
-        "get_rag_stats", "ask_rag", "file_watcher_stats"
-      ]
-    }
-  }
-}
-```
-
-Замените `ПУТЬ_К_ПРОЕКТУ` на полный путь к вашему проекту, например:
-- Windows: `C:\\Users\\username\\projects\\RagCore`
-- macOS/Linux: `/home/username/projects/RagCore`
-
-```
-
 2. Убедитесь, что оба сервера запущены:
    - RAG сервер: `python3 rag_server.py`
-   - MCP сервер: `cd mcp-server && npm run start:enhanced`
+   - MCP сервер: `npm run start:enhanced`
 
 3. Запустите Claude CLI с поддержкой MCP:
    ```bash
    claude --mcp chat
    ```
 
-4. **Важно**: Закройте текущее окно терминала и откройте новое с Claude CLI, чтобы изменения вступили в силу.
-
-5. Проверьте подключение, введя:
+4. Проверьте подключение, введя:
    ```
    get_rag_stats
    ```
