@@ -1,0 +1,26 @@
+{
+  "servers": [
+    {
+      "name": "rag-server",
+      "type": "stdio",
+      "command": "node",
+      "args": ["mcp-server/enhanced-mcp-server.js"],
+      "env": {
+        "RAG_SERVER_URL": "http://localhost:8000",
+        "WORKSPACE_FOLDER": "."
+      },
+      "autoApprove": [
+        "memory_bank_status", 
+        "memory_bank_read", 
+        "list_frameworks",
+        "get_rag_stats", 
+        "ask_rag", 
+        "file_watcher_stats",
+        "file_watcher_start",
+        "file_watcher_stop",
+        "memory_bank_search",
+        "list_models"
+      ]
+    }
+  ]
+}

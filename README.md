@@ -64,21 +64,17 @@ This will:
 - Activate the environment
 - Install all Python dependencies
 - Install Node.js dependencies
+- **Install MCP server globally as `rag-mcp-server`**
 - Create necessary directories
 - Set up initial configuration
 
-Step 2: Setup Node.js Dependencies
-cd mcp-server
-npm install
-cd ..
-
-Step 3: Configure Local LLM
+Step 2: Configure Local LLM
 
 Install LM Studio or Ollama
 Download meta-llama-3.1-8b-instruct model
 Start local server on http://127.0.0.1:1234 (LM Studio) or http://localhost:11434 (Ollama)
 
-Step 4: Add Documentation to documentation/ Folder
+Step 3: Add Documentation to documentation/ Folder
 Add any documentation you want to search through to the documentation/ folder. The system will automatically detect the technology based on the folder name you choose. For example:
 
 documentation/python_docs/ for Python documentation
@@ -409,21 +405,17 @@ cd rag_server
 - Активирует окружение
 - Установит все зависимости Python
 - Установит зависимости Node.js
+- **Установит MCP сервер глобально как `rag-mcp-server`**
 - Создаст необходимые директории
 - Настроит начальную конфигурацию
 
-Шаг 2: Настройка Node.js зависимостей
-cd mcp-server
-npm install
-cd ..
-
-Шаг 3: Настройка локальной LLM
+Шаг 2: Настройка локальной LLM
 
 Установите LM Studio или Ollama
 Скачайте модель meta-llama-3.1-8b-instruct
 Запустите локальный сервер на http://127.0.0.1:1234 (LM Studio) или http://localhost:11434 (Ollama)
 
-Шаг 4: Добавление документации в папку documentation/
+Шаг 3: Добавление документации в папку documentation/
 Добавьте любую документацию, которую вы хотите использовать, в папку documentation/. Система автоматически определит технологию по имени папки. Например:
 
 documentation/python_docs/ для документации Python

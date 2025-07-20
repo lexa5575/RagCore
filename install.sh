@@ -42,11 +42,15 @@ source venv/bin/activate
 # Устанавливаем зависимости
 pip3 install -r requirements.txt
 
-# Установка Node.js зависимостей
+# Установка Node.js зависимостей и глобальная установка MCP сервера
 echo ""
 echo "📦 Installing Node.js dependencies..."
 cd mcp-server
 npm install
+
+echo "🌍 Installing MCP server globally..."
+npm link
+echo "✅ MCP server is now globally available as 'rag-mcp-server'"
 cd ..
 
 # Создание папок если нужно
@@ -90,11 +94,16 @@ echo "3. Start RAG server:"
 echo "   python3 rag_server.py"
 echo ""
 echo "4. Start MCP server:"
-echo "   cd mcp-server && npm run start:enhanced"
+echo "   npm run start:enhanced"
+echo ""
+echo "🔗 Connect from any project:"
+echo "   Create .mcp.json in your project with:"
+echo '   {"servers":[{"name":"rag-server","type":"stdio","command":"rag-mcp-server"}]}'
 echo ""
 echo "💡 Useful commands:"
 echo "   python3 update_docs.py --scan    # Preview what will be processed"
 echo "   python3 update_docs.py           # Full automatic synchronization"
 echo "   python3 rag_server.py            # Start RAG server"
+echo "   rag-mcp-server                   # Start MCP server (globally available)"
 echo ""
 echo "📚 Documentation: README.md"

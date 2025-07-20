@@ -1,0 +1,27 @@
+{
+  "servers": [
+    {
+      "name": "rag-server",
+      "type": "stdio",
+      "command": "rag-mcp-server",
+      "env": {
+        "RAG_SERVER_URL": "http://localhost:8000"
+      },
+      "autoApprove": [
+        "memory_bank_status",
+        "memory_bank_read", 
+        "list_frameworks",
+        "get_rag_stats",
+        "ask_rag",
+        "file_watcher_stats",
+        "file_watcher_start",
+        "file_watcher_stop",
+        "memory_bank_search",
+        "list_models",
+        "memory_bank_write",
+        "memory_bank_archive",
+        "get_current_project"
+      ]
+    }
+  ]
+}

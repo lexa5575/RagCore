@@ -4,6 +4,9 @@
   "description": "MCP server for RAG Assistant integration with Cline",
   "main": "index.js",
   "type": "module",
+  "bin": {
+    "rag-mcp-server": "./enhanced-mcp-server.js"
+  },
   "scripts": {
     "start": "node index.js",
     "start:enhanced": "node enhanced-mcp-server.js",

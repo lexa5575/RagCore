@@ -33,9 +33,36 @@ server:
 
 # 📁 Frameworks (auto-updated by update_docs.py)
 frameworks:
-  # This section is automatically managed
-  # Add your documentation to documentation/ folder
-  # Run: python3 update_docs.py
+  vue:
+    name: Vue.js
+    enabled: true
+    path: ./documentation/vue_docs
+    description: Vue.js Framework
+    type: frontend
+  laravel:
+    name: Laravel
+    enabled: true
+    path: ./documentation/laravel_docs
+    description: Laravel PHP Framework
+    type: backend
+  alpine:
+    name: Alpine.js
+    enabled: true
+    path: ./documentation/alpine_docs
+    description: Alpine.js Framework
+    type: frontend
+  filament:
+    name: Filament
+    enabled: true
+    path: ./documentation/filament_docs
+    description: Filament Admin Panel
+    type: admin
+  tailwindcss:
+    name: Tailwind CSS
+    enabled: true
+    path: ./documentation/tailwindcss_docs
+    description: Tailwind CSS Framework
+    type: css
 
 # 📊 Logging
 logging:

@@ -8,12 +8,31 @@ import {
   ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import axios from 'axios';
+import yaml from 'js-yaml';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { MemoryBankManager } from './memory-bank-manager.js';
 import { FileWatcher } from './file-watcher.js';
 import { FileWatcherV2 } from './file-watcher-v2.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Конфигурация RAG сервера
 const RAG_SERVER_URL = 'http://localhost:8000';
+
+// Функция для чтения config.yaml
+async function loadConfig() {
+  try {
+    const configPath = path.join(__dirname, '..', 'config.yaml');
+    const configFile = await fs.readFile(configPath, 'utf8');
+    return yaml.load(configFile);
+  } catch (error) {
+    console.error('Ошибка чтения config.yaml:', error.message);
+    return null;
+  }
+}
 
 // Кэш проектных экземпляров для изоляции между проектами
 const projectInstances = new Map();
@@ -415,15 +434,45 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'list_frameworks': {
-        const response = await axios.get(`${RAG_SERVER_URL}/frameworks`);
-        const frameworks = response.data;
+        let frameworks = {};
+        let source = 'unknown';
         
-        let text = '📦 Доступные фреймворки:\n\n';
+        // Сначала пытаемся прочитать из локального config.yaml
+        try {
+          const config = await loadConfig();
+          if (config && config.frameworks) {
+            frameworks = config.frameworks;
+            source = 'config.yaml';
+          }
+        } catch (error) {
+          console.error('Ошибка чтения локального config.yaml:', error.message);
+        }
+        
+        // Если локальный config не содержит фреймворки, обращаемся к RAG серверу
+        if (Object.keys(frameworks).length === 0) {
+          try {
+            const response = await axios.get(`${RAG_SERVER_URL}/frameworks`);
+            frameworks = response.data;
+            source = 'RAG server';
+          } catch (error) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: `❌ Не удалось получить список фреймворков:\n- Локальный config.yaml недоступен или пуст\n- RAG сервер недоступен: ${error.message}`,
+                },
+              ],
+            };
+          }
+        }
+        
+        let text = `📦 Доступные фреймворки (источник: ${source}):\n\n`;
         
         for (const [key, info] of Object.entries(frameworks)) {
-          text += `**${info.name}** (${key})\n`;
-          text += `${info.description}\n`;
-          text += `Тип: ${info.type}\n\n`;
+          text += `**${info.name || key}** (${key})\n`;
+          text += `${info.description || 'Описание отсутствует'}\n`;
+          text += `Тип: ${info.type || 'не указан'}\n`;
+          text += `Статус: ${info.enabled ? '✅ Включен' : '❌ Отключен'}\n\n`;
         }
         
         return {
