@@ -99,26 +99,40 @@ npm run start:enhanced
 
 #### For Claude CLI
 
-1. Create a `.mcp.json` file in the project root with the following content:
+1. Create a `.mcp.json` file in your project root with the following content:
 
 ```json
 {
-  "servers": [
-    {
-      "name": "rag-server",
-      "type": "stdio",
-      "command": "node",
-      "args": ["mcp-server/enhanced-mcp-server.js"],
+  "mcpServers": {
+    "rag-server": {
+      "command": "rag-mcp-server",
       "env": {
-        "RAG_SERVER_URL": "http://localhost:8000",
-        "WORKSPACE_FOLDER": "."
+        "RAG_SERVER_URL": "http://localhost:8000"
       },
       "autoApprove": [
         "memory_bank_status", "memory_bank_read", "list_frameworks",
-        "get_rag_stats", "ask_rag", "file_watcher_stats"
+        "get_rag_stats", "ask_rag", "file_watcher_stats",
+        "file_watcher_start", "file_watcher_stop", "memory_bank_search",
+        "list_models", "memory_bank_write", "memory_bank_archive",
+        "get_current_project"
       ]
     }
-  ]
+  }
+}
+```
+
+**Alternative (if global command doesn't work):**
+```json
+{
+  "mcpServers": {
+    "rag-server": {
+      "command": "node",
+      "args": ["/full/path/to/chanki/mcp-server/enhanced-mcp-server.js"],
+      "env": {
+        "RAG_SERVER_URL": "http://localhost:8000"
+      }
+    }
+  }
 }
 ```
 
@@ -440,26 +454,40 @@ npm run start:enhanced
 
 #### Для Claude CLI
 
-1. Создайте файл `.mcp.json` в корне проекта со следующим содержимым:
+1. Создайте файл `.mcp.json` в корне вашего проекта со следующим содержимым:
 
 ```json
 {
-  "servers": [
-    {
-      "name": "rag-server",
-      "type": "stdio",
-      "command": "node",
-      "args": ["mcp-server/enhanced-mcp-server.js"],
+  "mcpServers": {
+    "rag-server": {
+      "command": "rag-mcp-server",
       "env": {
-        "RAG_SERVER_URL": "http://localhost:8000",
-        "WORKSPACE_FOLDER": "."
+        "RAG_SERVER_URL": "http://localhost:8000"
       },
       "autoApprove": [
         "memory_bank_status", "memory_bank_read", "list_frameworks",
-        "get_rag_stats", "ask_rag", "file_watcher_stats"
+        "get_rag_stats", "ask_rag", "file_watcher_stats",
+        "file_watcher_start", "file_watcher_stop", "memory_bank_search",
+        "list_models", "memory_bank_write", "memory_bank_archive",
+        "get_current_project"
       ]
     }
-  ]
+  }
+}
+```
+
+**Альтернатива (если глобальная команда не работает):**
+```json
+{
+  "mcpServers": {
+    "rag-server": {
+      "command": "node",
+      "args": ["/полный/путь/к/chanki/mcp-server/enhanced-mcp-server.js"],
+      "env": {
+        "RAG_SERVER_URL": "http://localhost:8000"
+      }
+    }
+  }
 }
 ```
 #### Для VS Code с Cline
