@@ -16,14 +16,36 @@ server:
   host: 0.0.0.0
   port: 8000
 frameworks:
-  # Add your frameworks here
-  # Example:
-  # my_framework:
-  #   name: My Framework
-  #   description: My Framework Documentation
-  #   path: ./documentation/my_framework_docs
-  #   type: markdown
-  #   enabled: true
+  tailwindcss:
+    name: Tailwind CSS
+    description: Tailwind CSS Documentation
+    path: ./documentation/tailwindcss_docs
+    type: markdown
+    enabled: true
+  vue:
+    name: Vue.js
+    description: Vue.js Documentation
+    path: ./documentation/vue_docs
+    type: markdown
+    enabled: true
+  alpine:
+    name: Alpine.js
+    description: Alpine.js Documentation
+    path: ./documentation/alpine_docs
+    type: markdown
+    enabled: true
+  filament:
+    name: Filament
+    description: Filament Documentation
+    path: ./documentation/filament_docs
+    type: markdown
+    enabled: true
+  laravel:
+    name: Laravel
+    description: Laravel Documentation
+    path: ./documentation/laravel_docs
+    type: markdown
+    enabled: true
 logging:
   level: INFO
   file: ./logs/rag_system.log
